@@ -28,6 +28,39 @@ class _ShadingAnalysisViewState extends State<ShadingAnalysisView> {
   // Selected time for analysis
   String _selectedMonth = 'Mar';
   
+  // List to track shading objects
+  final List<ShadingObject> _shadingObjects = [];
+  
+  // Add method to add a new shading object
+  void _addShadingObject() {
+    // Show dialog to add shading object
+    showDialog(
+      context: context,
+      builder: (context) => ShadingObjectDialog(
+        onSave: (shadingObject) {
+          setState(() {
+            _shadingObjects.add(shadingObject);
+          });
+        },
+      ),
+    );
+  }
+  
+  // Add method to edit an existing shading object
+  void _editShadingObject(int index) {
+    showDialog(
+      context: context,
+      builder: (context) => ShadingObjectDialog(
+        initialObject: _shadingObjects[index],
+        onSave: (shadingObject) {
+          setState(() {
+            _shadingObjects[index] = shadingObject;
+          });
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -69,6 +102,11 @@ class _ShadingAnalysisViewState extends State<ShadingAnalysisView> {
           child: SunPathChart(
             latitude: widget.latitude,
             month: _analysisMonths.indexOf(_selectedMonth) * 3 + 1, // Convert to month number
+            shadingObjects: _shadingObjects,
+            // Pass the parameters to the SunPathChart
+            maxSolarElevation: _maxSolarElevation,
+            minSolarElevation: _minSolarElevation, 
+            maxSolarAzimuth: _maxSolarAzimuth,
           ),
         ),
         
@@ -87,7 +125,7 @@ class _ShadingAnalysisViewState extends State<ShadingAnalysisView> {
                 ),
                 const SizedBox(height: 8),
                 
-                // List of shading objects - in a real app, this would be editable
+                // List of shading objects
                 _buildShadingObjectList(),
                 
                 const SizedBox(height: 8),
@@ -95,12 +133,7 @@ class _ShadingAnalysisViewState extends State<ShadingAnalysisView> {
                 ElevatedButton.icon(
                   icon: const Icon(Icons.add),
                   label: const Text('Add Shading Object'),
-                  onPressed: () {
-                    // This would open a dialog to add a shading object
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Add shading object dialog would open here')),
-                    );
-                  },
+                  onPressed: _addShadingObject,
                 ),
               ],
             ),
@@ -122,9 +155,21 @@ class _ShadingAnalysisViewState extends State<ShadingAnalysisView> {
                 ),
                 const SizedBox(height: 8),
                 
-                const Text('Shading loss: 4.2%'),
-                const SizedBox(height: 4),
-                const Text('Annual energy reduction: 2,620 kWh'),
+                Builder(builder: (context) {
+                  // Calculate shading loss
+                  final shadingLoss = _calculateShadingLoss();
+                  const annualProduction = 10000.0; // kWh, replace with actual system production
+                  final energyReduction = annualProduction * shadingLoss;
+                  
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Shading loss: ${(shadingLoss * 100).toStringAsFixed(1)}%'),
+                      const SizedBox(height: 4),
+                      Text('Annual energy reduction: ${energyReduction.toStringAsFixed(0)} kWh'),
+                    ],
+                  );
+                }),
                 
                 const SizedBox(height: 16),
                 
@@ -147,42 +192,170 @@ class _ShadingAnalysisViewState extends State<ShadingAnalysisView> {
   }
   
   Widget _buildShadingObjectList() {
-    // Sample shading objects - in a real app, this would be dynamic
-    return Column(
-      children: [
-        _buildShadingObjectItem('Tree', 'Height: 10m, Distance: 15m, Azimuth: 120°'),
-        _buildShadingObjectItem('Building', 'Height: 20m, Distance: 30m, Azimuth: 200°'),
-        _buildShadingObjectItem('Mountain', 'Elevation: 15°, Azimuth range: 240° - 280°'),
-      ],
+    if (_shadingObjects.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Text('No shading objects added. Click "Add Shading Object" to begin.'),
+        ),
+      );
+    }
+    
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _shadingObjects.length,
+      itemBuilder: (context, index) {
+        final object = _shadingObjects[index];
+        return _buildShadingObjectItem(
+          object.name,
+          object.getDetailsString(),
+          index,
+        );
+      },
     );
   }
   
-  Widget _buildShadingObjectItem(String name, String details) {
+  Widget _buildShadingObjectItem(String name, String details, int index) {
     return ListTile(
       leading: const Icon(Icons.filter_hdr),
       title: Text(name),
       subtitle: Text(details),
-      trailing: IconButton(
-        icon: const Icon(Icons.edit),
-        onPressed: () {
-          // This would open a dialog to edit the shading object
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Edit $name dialog would open here')),
-          );
-        },
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () => _editShadingObject(index),
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete),
+            onPressed: () {
+              setState(() {
+                _shadingObjects.removeAt(index);
+              });
+            },
+          ),
+        ],
       ),
     );
+  }
+  
+  double _calculateShadingLoss() {
+    // This is a simplified calculation
+    // In a real implementation, you would:
+    // 1. Calculate solar position for each hour of the year
+    // 2. Check if each position is shaded by objects
+    // 3. Sum up the potential production for all hours
+    // 4. Calculate the percentage loss due to shading
+    
+    double totalPotentialEnergy = 0;
+    double shadedEnergy = 0;
+    
+    // For each month
+    for (int month = 1; month <= 12; month++) {
+      // Number of days in month
+      final daysInMonth = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month];
+      
+      // For each hour of a typical day in this month
+      for (int hour = 6; hour <= 18; hour++) {
+        final declination = 23.45 * math.sin((month - 3) * 30 * math.pi / 180);
+        final hourAngle = (hour - 12) * 15;
+        
+        // Calculate solar position
+        final sinElevation = math.sin(widget.latitude * math.pi / 180) * math.sin(declination * math.pi / 180) +
+                           math.cos(widget.latitude * math.pi / 180) * math.cos(declination * math.pi / 180) *
+                           math.cos(hourAngle * math.pi / 180);
+        
+        final elevation = math.asin(sinElevation) * 180 / math.pi;
+        
+        if (elevation <= 0) continue; // Sun below horizon
+        
+        final sinAzimuth = -math.cos(declination * math.pi / 180) * 
+                          math.sin(hourAngle * math.pi / 180) /
+                          math.cos(elevation * math.pi / 180);
+                          
+        final cosAzimuth = (math.sin(declination * math.pi / 180) * math.cos(widget.latitude * math.pi / 180) -
+                          math.cos(declination * math.pi / 180) * math.sin(widget.latitude * math.pi / 180) *
+                          math.cos(hourAngle * math.pi / 180)) /
+                          math.cos(elevation * math.pi / 180);
+                          
+        var azimuth = math.atan2(sinAzimuth, cosAzimuth) * 180 / math.pi;
+        if (azimuth < 0) azimuth += 360;
+        
+        // Estimate energy for this hour
+        // This is a simplification - real calculation would use the solar radiation model
+        final hourlyEnergy = math.max(0, math.sin(elevation * math.pi / 180)) * daysInMonth;
+        totalPotentialEnergy += hourlyEnergy;
+        
+        // Check if this position is shaded
+        bool isShaded = false;
+        for (final object in _shadingObjects) {
+          if (_isSolarPositionShaded(elevation, azimuth, object)) {
+            isShaded = true;
+            break;
+          }
+        }
+        
+        if (isShaded) {
+          shadedEnergy += hourlyEnergy;
+        }
+      }
+    }
+    
+    // Calculate shading loss percentage
+    return totalPotentialEnergy > 0 ? shadedEnergy / totalPotentialEnergy : 0;
+  }
+  
+  bool _isSolarPositionShaded(double elevation, double azimuth, ShadingObject object) {
+    switch (object.type) {
+      case ShadingObjectType.tree:
+      case ShadingObjectType.pole:
+      case ShadingObjectType.building:
+        final objectElevation = math.atan(object.height / object.distance) * 180 / math.pi;
+        
+        // For buildings with width
+        if (object.type == ShadingObjectType.building && object.width != null) {
+          final angularWidth = math.atan(object.width! / (2 * object.distance)) * 180 / math.pi * 2;
+          final azimuthStart = object.azimuth - angularWidth / 2;
+          final azimuthEnd = object.azimuth + angularWidth / 2;
+          
+          return elevation <= objectElevation && 
+                 azimuth >= azimuthStart && 
+                 azimuth <= azimuthEnd;
+        }
+        
+        // For point objects
+        const angularSize = 2.0; // Approximate angular size in degrees
+        return elevation <= objectElevation && 
+               (azimuth >= object.azimuth - angularSize && 
+                azimuth <= object.azimuth + angularSize);
+        
+      case ShadingObjectType.mountain:
+      case ShadingObjectType.horizon:
+        return elevation <= (object.elevationAngle ?? 0) &&
+               azimuth >= (object.azimuthStart ?? 0) && 
+               azimuth <= (object.azimuthEnd ?? 0);
+    }
   }
 }
 
 class SunPathChart extends StatelessWidget {
   final double latitude;
   final int month;
+  final List<ShadingObject> shadingObjects;
+  final double maxSolarElevation;
+  final double minSolarElevation;
+  final double maxSolarAzimuth;
   
   const SunPathChart({
     super.key,
     required this.latitude,
     required this.month,
+    required this.shadingObjects,
+    required this.maxSolarElevation,
+    required this.minSolarElevation,
+    required this.maxSolarAzimuth,
   });
 
   @override
@@ -197,6 +370,10 @@ class SunPathChart extends StatelessWidget {
         painter: SunPathPainter(
           latitude: latitude,
           month: month,
+          shadingObjects: shadingObjects,
+          maxSolarElevation: maxSolarElevation,
+          minSolarElevation: minSolarElevation,
+          maxSolarAzimuth: maxSolarAzimuth,
         ),
       ),
     );
@@ -206,10 +383,23 @@ class SunPathChart extends StatelessWidget {
 class SunPathPainter extends CustomPainter {
   final double latitude;
   final int month;
+  final List<ShadingObject> shadingObjects;
+  final double maxSolarElevation;
+  final double minSolarElevation;
+  final double maxSolarAzimuth;
+  
+  // Sun path chart parameters
+  final double _maxSolarElevation = 90;
+  final double _minSolarElevation = 0;
+  final double _maxSolarAzimuth = 360;
   
   SunPathPainter({
     required this.latitude,
     required this.month,
+    required this.shadingObjects,
+    required this.maxSolarElevation,
+    required this.minSolarElevation,
+    required this.maxSolarAzimuth,
   });
   
   @override
@@ -284,6 +474,9 @@ class SunPathPainter extends CustomPainter {
     
     // Draw legend
     _drawLegend(canvas, size);
+    
+    // Draw shading objects
+    _drawShadingObjects(canvas, center, radius, shadingObjects);
   }
   
   void _drawCardinalDirection(
@@ -349,7 +542,10 @@ class SunPathPainter extends CustomPainter {
       
       final elevation = math.asin(sinElevation) * 180 / math.pi;
       
-      if (elevation <= 0) continue;
+      // Skip points below minimum elevation
+      if (elevation < _minSolarElevation) continue;
+      // Also cap at maximum elevation
+      final clampedElevation = math.min(elevation, _maxSolarElevation);
       
       final sinAzimuth = -math.cos(declination * math.pi / 180) * 
                         math.sin(hourAngle * math.pi / 180) /
@@ -366,8 +562,11 @@ class SunPathPainter extends CustomPainter {
         azimuth += 360;
       }
       
+      // Skip points beyond maximum azimuth
+      if (azimuth > _maxSolarAzimuth) continue;
+      
       // Convert to chart coordinates
-      final chartRadius = radius * (1 - elevation / 90);
+      final chartRadius = radius * (1 - clampedElevation / _maxSolarElevation);
       final x = center.dx + chartRadius * math.sin(azimuth * math.pi / 180);
       final y = center.dy - chartRadius * math.cos(azimuth * math.pi / 180);
       
@@ -397,7 +596,7 @@ class SunPathPainter extends CustomPainter {
       
       final elevation = math.asin(sinElevation) * 180 / math.pi;
       
-      if (elevation <= 0) continue;
+      if (elevation <= _minSolarElevation) continue;
       
       final sinAzimuth = -math.cos(declination * math.pi / 180) * 
                         math.sin(hourAngle * math.pi / 180) /
@@ -414,8 +613,10 @@ class SunPathPainter extends CustomPainter {
         azimuth += 360;
       }
       
+      if (azimuth > _maxSolarAzimuth) continue;
+      
       // Convert to chart coordinates
-      final chartRadius = radius * (1 - elevation / 90);
+      final chartRadius = radius * (1 - math.min(elevation, _maxSolarElevation) / _maxSolarElevation);
       final x = center.dx + chartRadius * math.sin(azimuth * math.pi / 180);
       final y = center.dy - chartRadius * math.cos(azimuth * math.pi / 180);
       
@@ -501,8 +702,390 @@ class SunPathPainter extends CustomPainter {
     textPainter.paint(canvas, Offset(45, size.height - 15));
   }
   
+  void _drawShadingObjects(Canvas canvas, Offset center, double radius, List<ShadingObject> shadingObjects) {
+    for (final object in shadingObjects) {
+      switch (object.type) {
+        case ShadingObjectType.tree:
+        case ShadingObjectType.pole:
+        case ShadingObjectType.building:
+          _drawObjectWithElevation(canvas, center, radius, object);
+          break;
+        case ShadingObjectType.mountain:
+        case ShadingObjectType.horizon:
+          _drawHorizonProfile(canvas, center, radius, object);
+          break;
+      }
+    }
+  }
+
+  void _drawObjectWithElevation(Canvas canvas, Offset center, double radius, ShadingObject object) {
+  // Calculate the angular height (elevation) of the object
+  final elevationAngle = math.atan(object.height / object.distance) * 180 / math.pi;
+  
+  // Calculate the azimuth range for the object (for buildings with width)
+  double azimuthStart = object.azimuth;
+  double azimuthEnd = object.azimuth;
+  
+  if (object.type == ShadingObjectType.building && object.width != null) {
+    // Calculate angular width
+    final angularWidth = math.atan(object.width! / (2 * object.distance)) * 180 / math.pi * 2;
+    azimuthStart = object.azimuth - angularWidth / 2;
+    azimuthEnd = object.azimuth + angularWidth / 2;
+  }
+  
+  // Define the shading object color
+  final shadingPaint = Paint()
+    ..color = Colors.black54
+    ..style = PaintingStyle.fill;
+  
+  // Define border paint
+  final borderPaint = Paint()
+    ..color = Colors.black
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 1.0;
+  
+  // Create a path for the shading object
+  final path = Path();
+  
+  // Calculate chart points
+  final chartRadius = radius * (1 - elevationAngle / maxSolarElevation);
+  
+  // For point objects (trees, poles)
+  if (object.type == ShadingObjectType.tree || object.type == ShadingObjectType.pole) {
+    // Simple circle for trees and poles
+    final x = center.dx + chartRadius * math.sin(object.azimuth * math.pi / 180);
+    final y = center.dy - chartRadius * math.cos(object.azimuth * math.pi / 180);
+    
+    final circleSize = radius * 0.05; // Size proportional to chart
+    canvas.drawCircle(Offset(x, y), circleSize, shadingPaint);
+    canvas.drawCircle(Offset(x, y), circleSize, borderPaint);
+  } else {
+    // For buildings with width, create a segment
+    final startX = center.dx + chartRadius * math.sin(azimuthStart * math.pi / 180);
+    final startY = center.dy - chartRadius * math.cos(azimuthStart * math.pi / 180);
+    
+    // We'll remove these unused variables:
+    // final endX = center.dx + chartRadius * math.sin(azimuthEnd * math.pi / 180);
+    // final endY = center.dy - chartRadius * math.cos(azimuthEnd * math.pi / 180);
+    
+    // Path from center to start, along the arc, and back to center
+    path.moveTo(center.dx, center.dy);
+    path.lineTo(startX, startY);
+    
+    // Draw the arc
+    final rect = Rect.fromCircle(center: center, radius: chartRadius);
+    path.arcTo(
+      rect,
+      (90 - azimuthStart) * math.pi / 180, // Convert to radians and adjust for coordinate system
+      (azimuthStart - azimuthEnd) * math.pi / 180, // Arc angle in radians
+      false,
+    );
+    
+    path.lineTo(center.dx, center.dy);
+    path.close();
+    
+    canvas.drawPath(path, shadingPaint);
+    canvas.drawPath(path, borderPaint);
+  }
+}
+
+  void _drawHorizonProfile(Canvas canvas, Offset center, double radius, ShadingObject object) {
+    // For mountains or horizon profiles
+    final elevationAngle = object.elevationAngle ?? 0;
+    final azimuthStart = object.azimuthStart ?? 0;
+    final azimuthEnd = object.azimuthEnd ?? 0;
+    
+    final shadingPaint = Paint()
+      ..color = Colors.black54
+      ..style = PaintingStyle.fill;
+    
+    final borderPaint = Paint()
+      ..color = Colors.black
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+    
+    final path = Path();
+    
+    // Calculate chart radius
+    final chartRadius = radius * (1 - elevationAngle / _maxSolarElevation);
+    
+    // Create a path for the mountain/horizon
+    final startX = center.dx + chartRadius * math.sin(azimuthStart * math.pi / 180);
+    final startY = center.dy - chartRadius * math.cos(azimuthStart * math.pi / 180);
+    
+    path.moveTo(center.dx, center.dy);
+    path.lineTo(startX, startY);
+    
+    // Draw the arc
+    final rect = Rect.fromCircle(center: center, radius: chartRadius);
+    path.arcTo(
+      rect,
+      (90 - azimuthStart) * math.pi / 180,
+      (azimuthStart - azimuthEnd) * math.pi / 180,
+      false,
+    );
+    
+    path.lineTo(center.dx, center.dy);
+    path.close();
+    
+    canvas.drawPath(path, shadingPaint);
+    canvas.drawPath(path, borderPaint);
+  }
+  
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return true;
+  }
+}
+
+// Define a class for shading objects
+class ShadingObject {
+  final String name;
+  final ShadingObjectType type;
+  final double height; // meters
+  final double distance; // meters
+  final double azimuth; // degrees
+  final double? width; // meters, optional
+  final double? elevationAngle; // degrees, optional for distant objects
+  final double? azimuthStart; // degrees, optional for wide objects
+  final double? azimuthEnd; // degrees, optional for wide objects
+  
+  ShadingObject({
+    required this.name,
+    required this.type,
+    required this.height,
+    required this.distance,
+    required this.azimuth,
+    this.width,
+    this.elevationAngle,
+    this.azimuthStart,
+    this.azimuthEnd,
+  });
+  
+  String getDetailsString() {
+    switch (type) {
+      case ShadingObjectType.tree:
+      case ShadingObjectType.pole:
+      case ShadingObjectType.building:
+        return 'Height: ${height}m, Distance: ${distance}m, Azimuth: ${azimuth}°';
+      case ShadingObjectType.mountain:
+      case ShadingObjectType.horizon:
+        return 'Elevation: ${elevationAngle}°, Azimuth range: ${azimuthStart}° - ${azimuthEnd}°';
+    }
+  }
+}
+
+enum ShadingObjectType {
+  tree,
+  pole,
+  building,
+  mountain,
+  horizon,
+}
+
+// Dialog to add/edit shading objects
+class ShadingObjectDialog extends StatefulWidget {
+  final ShadingObject? initialObject;
+  final Function(ShadingObject) onSave;
+  
+  const ShadingObjectDialog({
+    Key? key,
+    this.initialObject,
+    required this.onSave,
+  }) : super(key: key);
+
+  @override
+  State<ShadingObjectDialog> createState() => _ShadingObjectDialogState();
+}
+
+class _ShadingObjectDialogState extends State<ShadingObjectDialog> {
+  late TextEditingController _nameController;
+  late ShadingObjectType _type;
+  late TextEditingController _heightController;
+  late TextEditingController _distanceController;
+  late TextEditingController _azimuthController;
+  late TextEditingController _widthController;
+  late TextEditingController _elevationAngleController;
+  late TextEditingController _azimuthStartController;
+  late TextEditingController _azimuthEndController;
+  
+  @override
+  void initState() {
+    super.initState();
+    
+    final initialObject = widget.initialObject;
+    _nameController = TextEditingController(text: initialObject?.name ?? '');
+    _type = initialObject?.type ?? ShadingObjectType.tree;
+    _heightController = TextEditingController(text: initialObject?.height.toString() ?? '10');
+    _distanceController = TextEditingController(text: initialObject?.distance.toString() ?? '15');
+    _azimuthController = TextEditingController(text: initialObject?.azimuth.toString() ?? '180');
+    _widthController = TextEditingController(text: initialObject?.width?.toString() ?? '5');
+    _elevationAngleController = TextEditingController(text: initialObject?.elevationAngle?.toString() ?? '15');
+    _azimuthStartController = TextEditingController(text: initialObject?.azimuthStart?.toString() ?? '160');
+    _azimuthEndController = TextEditingController(text: initialObject?.azimuthEnd?.toString() ?? '200');
+  }
+  
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _heightController.dispose();
+    _distanceController.dispose();
+    _azimuthController.dispose();
+    _widthController.dispose();
+    _elevationAngleController.dispose();
+    _azimuthStartController.dispose();
+    _azimuthEndController.dispose();
+    super.dispose();
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(widget.initialObject == null ? 'Add Shading Object' : 'Edit Shading Object'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(
+                labelText: 'Name',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            DropdownButtonFormField<ShadingObjectType>(
+              value: _type,
+              decoration: const InputDecoration(
+                labelText: 'Object Type',
+                border: OutlineInputBorder(),
+              ),
+              items: ShadingObjectType.values.map((type) {
+                return DropdownMenuItem<ShadingObjectType>(
+                  value: type,
+                  child: Text(type.toString().split('.').last),
+                );
+              }).toList(),
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() {
+                    _type = value;
+                  });
+                }
+              },
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // Show relevant fields based on object type
+            if (_type == ShadingObjectType.tree || 
+                _type == ShadingObjectType.pole || 
+                _type == ShadingObjectType.building) ...[
+              TextField(
+                controller: _heightController,
+                decoration: const InputDecoration(
+                  labelText: 'Height (m)',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 16),
+              
+              TextField(
+                controller: _distanceController,
+                decoration: const InputDecoration(
+                  labelText: 'Distance (m)',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 16),
+              
+              TextField(
+                controller: _azimuthController,
+                decoration: const InputDecoration(
+                  labelText: 'Azimuth (°)',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              
+              if (_type == ShadingObjectType.building) ...[
+                const SizedBox(height: 16),
+                
+                TextField(
+                  controller: _widthController,
+                  decoration: const InputDecoration(
+                    labelText: 'Width (m)',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+              ],
+            ],
+            
+            if (_type == ShadingObjectType.mountain || 
+                _type == ShadingObjectType.horizon) ...[
+              TextField(
+                controller: _elevationAngleController,
+                decoration: const InputDecoration(
+                  labelText: 'Elevation Angle (°)',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 16),
+              
+              TextField(
+                controller: _azimuthStartController,
+                decoration: const InputDecoration(
+                  labelText: 'Azimuth Start (°)',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 16),
+              
+              TextField(
+                controller: _azimuthEndController,
+                decoration: const InputDecoration(
+                  labelText: 'Azimuth End (°)',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+            ],
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            // Create new shading object from form data
+            final shadingObject = ShadingObject(
+              name: _nameController.text.isEmpty ? 'Unnamed Object' : _nameController.text,
+              type: _type,
+              height: double.tryParse(_heightController.text) ?? 10,
+              distance: double.tryParse(_distanceController.text) ?? 15,
+              azimuth: double.tryParse(_azimuthController.text) ?? 180,
+              width: double.tryParse(_widthController.text),
+              elevationAngle: double.tryParse(_elevationAngleController.text),
+              azimuthStart: double.tryParse(_azimuthStartController.text),
+              azimuthEnd: double.tryParse(_azimuthEndController.text),
+            );
+            
+            widget.onSave(shadingObject);
+            Navigator.of(context).pop();
+          },
+          child: const Text('Save'),
+        ),
+      ],
+    );
   }
 }
