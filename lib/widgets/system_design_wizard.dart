@@ -4,8 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:solarsim/models/project.dart';
 import 'package:solarsim/models/solar_module.dart';
 import 'package:solarsim/models/inverter.dart';
-import 'package:solarsim/models/location.dart';
-import 'package:solarsim/services/project_service.dart';
 import 'package:solarsim/widgets/module_selection_dialog.dart';
 import 'package:solarsim/widgets/inverter_selection_dialog.dart';
 import 'package:solarsim/core/pv_array.dart';

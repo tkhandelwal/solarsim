@@ -112,7 +112,7 @@ class CashFlowChart extends StatelessWidget {
       dotData: const FlDotData(show: true),
       belowBarData: BarAreaData(
         show: true,
-        color: Colors.blue.withOpacity(0.2),
+        color: const Color.fromRGBO(0, 0, 255, 0.2), // RGBA format
       ),
     );
   }
@@ -138,7 +138,8 @@ class CashFlowChart extends StatelessWidget {
       dotData: const FlDotData(show: true),
       belowBarData: BarAreaData(
         show: true,
-        color: Colors.green.withOpacity(0.1),
+        color: const Color.fromRGBO(76, 175, 80, 0.1), // const RGBA for Colors.green with 0.2 opacity
+
       ),
     );
   }

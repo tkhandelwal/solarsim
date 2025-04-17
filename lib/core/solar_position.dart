@@ -86,7 +86,7 @@ class SolarPosition {
   /// Calculate the sunrise time for a given date and location
   static DateTime calculateSunriseTime(DateTime date, double latitude, double longitude, double timeZoneOffset) {
     // Day of the year (1-365)
-    final dayOfYear = date.difference(DateTime(date.year, 1, 1)).inDays + 1;
+    //final dayOfYear = date.difference(DateTime(date.year, 1, 1)).inDays + 1;
     
     // Solar declination
     final declination = calculateDeclination(DateTime(date.year, date.month, date.day, 12));
@@ -119,7 +119,7 @@ class SolarPosition {
   /// Calculate the sunset time for a given date and location
   static DateTime calculateSunsetTime(DateTime date, double latitude, double longitude, double timeZoneOffset) {
     // Day of the year (1-365)
-    final dayOfYear = date.difference(DateTime(date.year, 1, 1)).inDays + 1;
+    //final dayOfYear = date.difference(DateTime(date.year, 1, 1)).inDays + 1;
     
     // Solar declination
     final declination = calculateDeclination(DateTime(date.year, date.month, date.day, 12));

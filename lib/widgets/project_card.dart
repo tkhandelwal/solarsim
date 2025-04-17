@@ -96,7 +96,8 @@ class ProjectCard extends StatelessWidget {
     }
     
     return Chip(
-      backgroundColor: chipColor.withOpacity(0.2),
+      backgroundColor: chipColor.withAlpha(51), // 51 is ~20% of 255
+
       side: BorderSide(color: chipColor),
       label: Text(
         label,

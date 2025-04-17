@@ -1073,7 +1073,7 @@ class _FinancialROICalculatorState extends State<FinancialROICalculator> with Si
             dotData: const FlDotData(show: false),
             belowBarData: BarAreaData(
               show: true,
-              color: Colors.green.withOpacity(0.2),
+              color: const Color.fromRGBO(76, 175, 80, 0.2), // const RGBA for Colors.green with 0.2 opacity
               cutOffY: 0,
               applyCutOffY: true,
             ),
@@ -1095,7 +1095,7 @@ class _FinancialROICalculatorState extends State<FinancialROICalculator> with Si
             dashArray: [5, 5],
             belowBarData: BarAreaData(
               show: true,
-              color: Colors.blue.withOpacity(0.1),
+              color: const Color.fromRGBO(0, 0, 255, 0.1), // RGBA format
               cutOffY: 0,
               applyCutOffY: true,
             ),

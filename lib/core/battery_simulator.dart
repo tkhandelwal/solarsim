@@ -106,6 +106,16 @@ class BatterySimulator {
   double _calendarAge = 0; // years
   double _degradationFactor = 1.0;
   
+// Add these tracking variables
+  double totalPvProduction = 0;
+  double totalLoad = 0;
+  double batteryChargeThroughput = 0;
+  double totalSelfConsumed = 0;
+  double batteryDischargeThroughput = 0;
+  double totalGridImport = 0;
+  double totalGridExport = 0;
+  double totalCost = 0;
+
   BatterySimulator({
     required this.batterySystem,
     double initialSocPercent = 50.0,
@@ -117,6 +127,17 @@ class BatterySimulator {
     _cycleCount = 0;
     _calendarAge = 0;
     _degradationFactor = 1.0;
+
+// Reset tracking variables
+    totalPvProduction = 0;
+    totalLoad = 0;
+    batteryChargeThroughput = 0;
+    totalSelfConsumed = 0;
+    batteryDischargeThroughput = 0;
+    totalGridImport = 0;
+    totalGridExport = 0;
+    totalCost = 0;
+
   }
   
   // Get state of charge (kWh)
@@ -181,6 +202,8 @@ class BatterySimulator {
       double pvToGrid = 0;
       double batteryToLoad = 0;
       double gridToLoad = 0;
+      
+
       
       // Get current import rate for this hour
       double currentImportRate = gridImportRate;
@@ -519,7 +542,9 @@ class BatterySimulator {
     final costWithBattery = batteryResult.dailyCost;
     
     // Calculate daily savings
-    final dailySavings = baselineCost - costWithBattery;
+    dailySavingsWithBattery = costWithBattery;
+    dailySavingsWithoutBattery = baselineCost;
+    final dailySavings = dailySavingsWithoutBattery - dailySavingsWithBattery;
     
     // Project annual savings
     final annualSavings = dailySavings * 365;

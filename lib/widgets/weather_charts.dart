@@ -283,7 +283,7 @@ class TemperatureChart extends StatelessWidget {
       dotData: const FlDotData(show: true),
       belowBarData: BarAreaData(
         show: true,
-        color: Colors.blue.withOpacity(0.2),
+        color: const Color.fromRGBO(0, 0, 255, 0.2), // RGBA format
       ),
     );
   }

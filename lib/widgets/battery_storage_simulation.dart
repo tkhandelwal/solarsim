@@ -46,7 +46,7 @@ class _BatteryStorageSimulationState extends State<BatteryStorageSimulation> wit
   
   // Battery control strategy
   int _controlStrategy = 0; // 0 = self-consumption, 1 = time-of-use, 2 = peak shaving
-  List<double> _timeOfUseRates = [0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 
+  final List<double> _timeOfUseRates = [0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 
                                  0.15, 0.25, 0.25, 0.15, 0.15, 0.15,
                                  0.15, 0.15, 0.15, 0.15, 0.25, 0.35,
                                  0.35, 0.35, 0.25, 0.15, 0.10, 0.10]; // $/kWh
@@ -376,8 +376,8 @@ class _BatteryStorageSimulationState extends State<BatteryStorageSimulation> wit
       final dayWeight = dayType == 0 ? 0.7 : (dayType == 1 ? 0.2 : 0.1);
       
       // Simulate a day without battery
-      final hourlyLoad = _results['hourlyLoad'] as List<double>;
-      final hourlyProduction = _results['hourlyProduction'] as List<double>;
+      final hourlyLoad = _results['hourlyLoad'] as List<double>? ?? [];
+      final hourlyProduction = _results['hourlyProduction'] as List<double>? ?? [];
       final productionFactor = dayType == 0 ? 1.0 : (dayType == 1 ? 0.5 : 1.3);
       final dayProduction = List<double>.from(hourlyProduction.map((p) => p * productionFactor));
       

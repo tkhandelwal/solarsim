@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:solarsim/models/project.dart';
 import 'package:solarsim/providers/projects_provider.dart';
-import 'package:solarsim/models/simulation_result.dart';
 import 'package:solarsim/providers/simulation_provider.dart';
 import 'package:solarsim/widgets/module_selection_dialog.dart';
 import 'package:solarsim/widgets/inverter_selection_dialog.dart';

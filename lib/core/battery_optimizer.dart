@@ -1,15 +1,15 @@
 // lib/core/battery_optimizer.dart
 import 'dart:math' as math;
-import '../models/battery_system.dart';
-import 'battery_simulator.dart';
+import '../models/battery_system.dart' as models; // Use a prefix for models
+import 'battery_simulator.dart' as sim;  // Use a prefix for simulator
 
 /// Type definition for custom battery control strategy
 typedef CustomTimeOfUseStrategy = Map<String, bool> Function(int hour, double batteryStateOfCharge, double maxCapacity);
 
 /// Advanced optimizer for battery operation strategies
 class BatteryOptimizer {
-  final BatterySystem batterySystem;
-  final BatterySimulator simulator;
+  final models.BatterySystem batterySystem;
+  final sim.BatterySimulator simulator;
   
   // Control parameters
   final double _learningRate = 0.05;
@@ -23,7 +23,7 @@ class BatteryOptimizer {
   /// Optimize time-of-use strategy
   /// Returns optimized charge/discharge thresholds
   Map<String, double> optimizeTimeOfUseStrategy({
-    required List<TimeOfUseRate> timeOfUseRates,
+    required List<sim.TimeOfUseRate> timeOfUseRates,
     required List<double> typicalLoad,
     required List<double> typicalProduction,
   }) {
@@ -176,7 +176,7 @@ class BatteryOptimizer {
       if (size < 0.1) continue;
       
       // Create a battery system with this capacity
-      final testBattery = BatterySystem(
+      final testBattery = models.BatterySystem(
         id: 'test_battery',
         manufacturer: 'Optimizer',
         model: 'Test Model',
@@ -214,7 +214,7 @@ class BatteryOptimizer {
   }
   
   /// Find minimum rate in time-of-use schedule
-  double _findMinRate(List<TimeOfUseRate> rates) {
+  double _findMinRate(List<sim.TimeOfUseRate> rates) {
     double minRate = double.infinity;
     for (final rate in rates) {
       if (rate.rate < minRate) {
@@ -225,7 +225,7 @@ class BatteryOptimizer {
   }
   
   /// Find maximum rate in time-of-use schedule
-  double _findMaxRate(List<TimeOfUseRate> rates) {
+  double _findMaxRate(List<sim.TimeOfUseRate> rates) {
     double maxRate = 0;
     for (final rate in rates) {
       if (rate.rate > maxRate) {
@@ -239,7 +239,7 @@ class BatteryOptimizer {
   double _evaluateTimeOfUseThresholds({
     required double chargeThreshold,
     required double dischargeThreshold,
-    required List<TimeOfUseRate> timeOfUseRates,
+    required List<sim.TimeOfUseRate> timeOfUseRates,
     required List<double> typicalLoad,
     required List<double> typicalProduction,
   }) {
@@ -274,7 +274,7 @@ class BatteryOptimizer {
     final result = simulator.simulateDay(
       hourlyLoad: typicalLoad,
       hourlyPvProduction: typicalProduction,
-      controlStrategy: BatteryControlStrategy.timeOfUse,
+      controlStrategy: sim.BatteryControlStrategy.timeOfUse,
       timeOfUseRates: timeOfUseRates,
       customTimeOfUseStrategy: customStrategy, // Pass the custom strategy here
     );
@@ -322,7 +322,7 @@ class BatteryOptimizer {
     final result = simulator.simulateDay(
       hourlyLoad: typicalLoad,
       hourlyPvProduction: typicalProduction,
-      controlStrategy: BatteryControlStrategy.peakShaving,
+      controlStrategy: sim.BatteryControlStrategy.peakShaving,
       gridImportLimit: threshold,
     );
     
@@ -415,7 +415,7 @@ class BatteryOptimizer {
   
   /// Calculate NPV for a specific battery size
   double _calculateBatterySizeNPV({
-    required BatterySystem battery,
+    required models.BatterySystem battery,
     required List<double> annualHourlyLoad,
     required List<double> annualHourlyProduction,
     required double electricityBuyPrice,
@@ -427,7 +427,7 @@ class BatteryOptimizer {
     double npv = -battery.totalCost;
     
     // Create a simulator for this battery
-    final batterySimulator = BatterySimulator(
+    final batterySimulator = sim.BatterySimulator(
       batterySystem: battery,
       initialSocPercent: 50.0,
     );
@@ -454,7 +454,7 @@ class BatteryOptimizer {
         final result = batterySimulator.simulateDay(
           hourlyLoad: dailyLoad,
           hourlyPvProduction: dailyProduction,
-          controlStrategy: BatteryControlStrategy.selfConsumption,
+          controlStrategy: sim.BatteryControlStrategy.selfConsumption,
           gridImportRate: electricityBuyPrice,
           gridExportRate: electricitySellPrice,
         );
@@ -508,13 +508,13 @@ class BatteryOptimizer {
 class BatteryOptimizationResult {
   final Map<String, dynamic> parameters;
   final Map<String, dynamic> results;
-  final List<HourlyBatteryResult> hourlySelfConsumption;
-  final List<HourlyBatteryResult> hourlyTimeOfUse;
-  final List<HourlyBatteryResult> hourlyPeakShaving;
+  final List<sim.HourlyBatteryResult> hourlySelfConsumption;
+  final List<sim.HourlyBatteryResult> hourlyTimeOfUse;
+  final List<sim.HourlyBatteryResult> hourlyPeakShaving;
   final double selfConsumptionSavings;
   final double timeOfUseSavings;
   final double peakShavingSavings;
-  final BatteryControlStrategy recommendedStrategy;
+  final sim.BatteryControlStrategy recommendedStrategy; // Use sim.BatteryControlStrategy
   final String explanation;
   
   BatteryOptimizationResult({
@@ -531,35 +531,30 @@ class BatteryOptimizationResult {
   });
   
   /// Get the results for a specific strategy
-  List<HourlyBatteryResult> getHourlyResults(BatteryControlStrategy strategy) {
+  List<sim.HourlyBatteryResult> getHourlyResults(sim.BatteryControlStrategy strategy) {
     switch (strategy) {
-      case BatteryControlStrategy.selfConsumption:
+      case sim.BatteryControlStrategy.selfConsumption:
         return hourlySelfConsumption;
-      case BatteryControlStrategy.timeOfUse:
+      case sim.BatteryControlStrategy.timeOfUse:
         return hourlyTimeOfUse;
-      case BatteryControlStrategy.peakShaving:
+      case sim.BatteryControlStrategy.peakShaving:
         return hourlyPeakShaving;
-      default:
-        return hourlySelfConsumption;
-    }
+      }
   }
   
   /// Get the annual savings for a strategy
-  double getAnnualSavings(BatteryControlStrategy strategy) {
+  double getAnnualSavings(sim.BatteryControlStrategy strategy) {
     switch (strategy) {
-      case BatteryControlStrategy.selfConsumption:
+      case sim.BatteryControlStrategy.selfConsumption:
         return selfConsumptionSavings * 365;
-      case BatteryControlStrategy.timeOfUse:
+      case sim.BatteryControlStrategy.timeOfUse:
         return timeOfUseSavings * 365;
-      case BatteryControlStrategy.peakShaving:
-        return peakShavingSavings * 12; // Monthly peak charges
-      default:
-        return selfConsumptionSavings * 365;
-    }
+      case sim.BatteryControlStrategy.peakShaving:
+        return peakShavingSavings * 12; }
   }
   
   /// Calculate the payback period for a strategy
-  double getPaybackPeriod(BatteryControlStrategy strategy, double batteryCost) {
+  double getPaybackPeriod(sim.BatteryControlStrategy strategy, double batteryCost) {
     final annualSavings = getAnnualSavings(strategy);
     if (annualSavings <= 0) return double.infinity;
     return batteryCost / annualSavings;
