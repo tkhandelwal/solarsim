@@ -148,7 +148,7 @@ class TemperatureChart extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: LineChart(
           LineChartData(
-            gridData: FlGridData(
+            gridData: const FlGridData(
               show: true,
               horizontalInterval: 5,
             ),
@@ -185,10 +185,10 @@ class TemperatureChart extends StatelessWidget {
                   },
                 ),
               ),
-              topTitles: AxisTitles(
+              topTitles: const AxisTitles(
                 sideTitles: SideTitles(showTitles: false),
               ),
-              rightTitles: AxisTitles(
+              rightTitles: const AxisTitles(
                 sideTitles: SideTitles(showTitles: false),
               ),
             ),
@@ -280,7 +280,7 @@ class TemperatureChart extends StatelessWidget {
       color: Colors.blue,
       barWidth: 3,
       isStrokeCapRound: true,
-      dotData: FlDotData(show: true),
+      dotData: const FlDotData(show: true),
       belowBarData: BarAreaData(
         show: true,
         color: Colors.blue.withOpacity(0.2),
@@ -318,7 +318,7 @@ class TemperatureChart extends StatelessWidget {
       color: Colors.red,
       barWidth: 2,
       isStrokeCapRound: true,
-      dotData: FlDotData(show: false),
+      dotData: const FlDotData(show: false),
     );
   }
   
@@ -352,7 +352,7 @@ class TemperatureChart extends StatelessWidget {
       color: Colors.lightBlue,
       barWidth: 2,
       isStrokeCapRound: true,
-      dotData: FlDotData(show: false),
+      dotData: const FlDotData(show: false),
     );
   }
 }
@@ -422,14 +422,14 @@ class WindSpeedChart extends StatelessWidget {
                   },
                 ),
               ),
-              topTitles: AxisTitles(
+              topTitles: const AxisTitles(
                 sideTitles: SideTitles(showTitles: false),
               ),
-              rightTitles: AxisTitles(
+              rightTitles: const AxisTitles(
                 sideTitles: SideTitles(showTitles: false),
               ),
             ),
-            gridData: FlGridData(
+            gridData: const FlGridData(
               show: true,
               horizontalInterval: 1,
             ),

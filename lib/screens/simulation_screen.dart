@@ -690,7 +690,7 @@ class _SimulationScreenState extends ConsumerState<SimulationScreen> with Single
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(label),
-              Text('${value.toStringAsFixed(1)}'),
+              Text(value.toStringAsFixed(1)),
             ],
           ),
           Slider(

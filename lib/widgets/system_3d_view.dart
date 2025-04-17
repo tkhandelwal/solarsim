@@ -165,7 +165,7 @@ class _System3DViewState extends State<System3DView> with SingleTickerProviderSt
   
   Widget _buildSolarArray() {
     // Calculate array dimensions
-    final moduleWidth = 50.0;
+    const moduleWidth = 50.0;
     final moduleHeight = moduleWidth * (widget.module.length / widget.module.width);
     
     final arrayWidth = moduleWidth * widget.modulesInSeries;

@@ -122,9 +122,9 @@ class _ShadingAnalysisViewState extends State<ShadingAnalysisView> {
                 ),
                 const SizedBox(height: 8),
                 
-                Text('Shading loss: 4.2%'),
+                const Text('Shading loss: 4.2%'),
                 const SizedBox(height: 4),
-                Text('Annual energy reduction: 2,620 kWh'),
+                const Text('Annual energy reduction: 2,620 kWh'),
                 
                 const SizedBox(height: 16),
                 

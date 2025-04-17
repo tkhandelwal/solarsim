@@ -1,5 +1,5 @@
 // lib/widgets/financial_chart.dart
-import 'dart:math' as Math;
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -69,10 +69,10 @@ class CashFlowChart extends StatelessWidget {
                   },
                 ),
               ),
-              topTitles: AxisTitles(
+              topTitles: const AxisTitles(
                 sideTitles: SideTitles(showTitles: false),
               ),
-              rightTitles: AxisTitles(
+              rightTitles: const AxisTitles(
                 sideTitles: SideTitles(showTitles: false),
               ),
             ),
@@ -109,7 +109,7 @@ class CashFlowChart extends StatelessWidget {
       color: Colors.blue,
       barWidth: 3,
       isStrokeCapRound: true,
-      dotData: FlDotData(show: true),
+      dotData: const FlDotData(show: true),
       belowBarData: BarAreaData(
         show: true,
         color: Colors.blue.withOpacity(0.2),
@@ -135,7 +135,7 @@ class CashFlowChart extends StatelessWidget {
       color: Colors.green,
       barWidth: 3,
       isStrokeCapRound: true,
-      dotData: FlDotData(show: true),
+      dotData: const FlDotData(show: true),
       belowBarData: BarAreaData(
         show: true,
         color: Colors.green.withOpacity(0.1),

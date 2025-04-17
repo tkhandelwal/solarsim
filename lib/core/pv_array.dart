@@ -52,16 +52,16 @@ class PVArray {
     
     // Calculate minimum and maximum voltage at extreme temperatures
     // Assume a temperature coefficient of -0.35%/°C for Voc
-    final voc25 = 40.0; // Example Voc at 25°C
-    final vocTempCoeff = -0.0035; // -0.35%/°C
+    const voc25 = 40.0; // Example Voc at 25°C
+    const vocTempCoeff = -0.0035; // -0.35%/°C
     
     // Voc at minimum temperature
     final vocMin = voc25 * (1 + vocTempCoeff * (minTemp - 25.0));
     final maxVoltageAtMinTemp = vocMin * modulesInSeries;
     
     // Vmp at maximum temperature
-    final vmp25 = 33.0; // Example Vmp at 25°C
-    final vmpTempCoeff = -0.004; // -0.40%/°C
+    const vmp25 = 33.0; // Example Vmp at 25°C
+    const vmpTempCoeff = -0.004; // -0.40%/°C
     final vmpMax = vmp25 * (1 + vmpTempCoeff * (maxTemp - 25.0));
     final minVoltageAtMaxTemp = vmpMax * modulesInSeries;
     
@@ -96,10 +96,10 @@ class PVArray {
     double maxTemp = 75.0,  // °C
   }) {
     // Assume standard module parameters for demonstration
-    final voc25 = 40.0; // Example Voc at 25°C
-    final vocTempCoeff = -0.0035; // -0.35%/°C
-    final vmp25 = 33.0; // Example Vmp at 25°C
-    final vmpTempCoeff = -0.004; // -0.40%/°C
+    const voc25 = 40.0; // Example Voc at 25°C
+    const vocTempCoeff = -0.0035; // -0.35%/°C
+    const vmp25 = 33.0; // Example Vmp at 25°C
+    const vmpTempCoeff = -0.004; // -0.40%/°C
     
     // Voc at minimum temperature
     final vocMin = voc25 * (1 + vocTempCoeff * (minTemp - 25.0));
