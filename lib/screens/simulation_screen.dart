@@ -552,7 +552,7 @@ class _SimulationScreenState extends ConsumerState<SimulationScreen> with Single
     );
   }
   
-Widget _buildSliderField(
+  Widget _buildSliderField(
     String label,
     double value,
     double min,
@@ -581,6 +581,25 @@ Widget _buildSliderField(
             },
           ),
         ],
+      ),
+    );
+  }
+  
+  Widget _buildNumberField(
+    String label,
+    String value,
+    Function(String) onChanged,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: TextField(
+        decoration: InputDecoration(
+          labelText: label,
+          border: const OutlineInputBorder(),
+        ),
+        keyboardType: TextInputType.number,
+        controller: TextEditingController(text: value),
+        onChanged: onChanged,
       ),
     );
   }

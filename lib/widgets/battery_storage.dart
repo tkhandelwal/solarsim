@@ -245,6 +245,31 @@ class BatterySimulationChart extends StatelessWidget {
         lineTouchData: LineTouchData(
           touchTooltipData: LineTouchTooltipData(
             tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
+            getTooltipItems: (List<LineBarSpot> touchedSpots) {
+              return touchedSpots.map((LineBarSpot touchedSpot) {
+                final lineData = touchedSpot.bar;
+                String unit = '';
+                String title = '';
+                if (lineData == _getBatteryStateOfChargeData()) {
+                  title = 'Battery';
+                  unit = 'kWh';
+                } else if (lineData == _getSolarProductionData()) {
+                  title = 'Solar';
+                  unit = 'kW';
+                } else if (lineData == _getConsumptionData()) {
+                  title = 'Consumption';
+                  unit = 'kW';
+                }
+                
+                return LineTooltipItem(
+                  '$title: ${touchedSpot.y.toStringAsFixed(1)} $unit',
+                  TextStyle(
+                    color: touchedSpot.bar.color,
+                    fontWeight: FontWeight.bold,
+                  ),
+                );
+              }).toList();
+            },
           ),
           touchCallback: (FlTouchEvent event, LineTouchResponse? touchResponse) {},
           handleBuiltInTouches: true,
@@ -321,34 +346,6 @@ class BatterySimulationChart extends StatelessWidget {
           _getSolarProductionData(),
           _getConsumptionData(),
         ],
-        lineTouchTooltipData: LineTouchTooltipData(
-          tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
-          getTooltipItems: (List<LineBarSpot> touchedSpots) {
-            return touchedSpots.map((LineBarSpot touchedSpot) {
-              final lineData = touchedSpot.bar;
-              String unit = '';
-              String title = '';
-              if (lineData == _getBatteryStateOfChargeData()) {
-                title = 'Battery';
-                unit = 'kWh';
-              } else if (lineData == _getSolarProductionData()) {
-                title = 'Solar';
-                unit = 'kW';
-              } else if (lineData == _getConsumptionData()) {
-                title = 'Consumption';
-                unit = 'kW';
-              }
-              
-              return LineTooltipItem(
-                '$title: ${touchedSpot.y.toStringAsFixed(1)} $unit',
-                TextStyle(
-                  color: touchedSpot.bar.color,
-                  fontWeight: FontWeight.bold,
-                ),
-              );
-            }).toList();
-          },
-        ),
       ),
     );
   }
