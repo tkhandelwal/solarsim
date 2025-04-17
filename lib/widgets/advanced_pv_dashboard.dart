@@ -965,154 +965,1668 @@ class _AdvancedPVDashboardState extends State<AdvancedPVDashboard> with SingleTi
   }
   
   Widget _buildEnergyFlowDiagram() {
-    // This would ideally be a custom interactive diagram showing energy flows
-    // For now, we'll create a simplified static version
-    
-    return Stack(
-      children: [
-        // Background
-        Positioned.fill(
-          child: Container(
-            color: Colors.blue[50],
-          ),
-        ),
-        
-        // Sun
-        Positioned(
-          top: 30,
-          left: 50,
-          child: Column(
-            children: [
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: Colors.yellow,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.yellow.withOpacity(0.5),
-                      blurRadius: 20,
-                      spreadRadius: 5,
-                    ),
-                  ],
-                ),
-                child: const Center(
-                  child: Icon(Icons.wb_sunny, size: 60, color: Colors.orange),
-                ),
-              ),
-              const SizedBox(height: 10),
-              const Text('Sun', style: TextStyle(fontWeight: FontWeight.bold)),
-            ],
-          ),
-        ),
-        
-        // Solar Panels
-        Positioned(
-          top: 150,
-          left: MediaQuery.of(context).size.width / 2 - 100,
-          child: Column(
-            children: [
-              Transform(
-                transform: Matrix4.rotationX(0.5), // Tilt panels
-                alignment: Alignment.center,
-                child: Container(
-                  width: 200,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.blue[900],
-                    border: Border.all(color: Colors.grey[300]!),
-                  ),
-                  child: GridView.builder(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 4,
-                      childAspectRatio: 1,
-                    ),
-                    itemCount: 8,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      return Container(
-                        margin: const EdgeInsets.all(2),
-                        color: Colors.blue[800],
-                      );
-                    },
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              const Text('Solar Panels', style: TextStyle(fontWeight: FontWeight.bold)),
-              Text('${_currentPower.toStringAsFixed(1)} kW', style: TextStyle(color: Colors.blue[700])),
-            ],
-          ),
-        ),
-        
-        // Inverter
-        Positioned(
-          top: 300,
-          left: MediaQuery.of(context).size.width / 2 - 40,
-          child: Column(
-            children: [
-              Container(
-                width: 80,
-                height: 100,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.grey[600]!),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.electrical_services, size: 40, color: Colors.grey[800]),
-                    const SizedBox(height: 4),
-                    Container(
-                      width: 40,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        color: Colors.green,
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-              const Text('Inverter', style: TextStyle(fontWeight: FontWeight.bold)),
-            ],
-          ),
-        ),
-        
-        // Battery (if applicable)
-        if (widget.batteryCapacity != null)
+    // This is a simplified energy flow diagram
+    return Container(
+      width: double.infinity,
+      height: 400,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Stack(
+        children: [
+          // Sun
           Positioned(
-            top: 300,
-            right: 50,
+            top: 20,
+            left: 20,
             child: Column(
               children: [
-                Stack(
-                  alignment: Alignment.bottomCenter,
-                  children: [
-                    Container(
-                      width: 70,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        border: Border.all(color: Colors.grey[600]!),
-                        borderRadius: BorderRadius.circular(5),
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: Colors.yellow,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.yellow.withOpacity(0.6),
+                        blurRadius: 20,
+                        spreadRadius: 10,
                       ),
-                    ),
-                    Container(
-                      width: 70,
-                      height: 100 * _batteryStateOfCharge / 100,
-                      decoration: BoxDecoration(
-                        color: _getBatteryColor(_batteryStateOfCharge),
-                        borderRadius: BorderRadius.circular(5),
+                    ],
+                  ),
+                  child: const Center(
+                    child: Icon(Icons.wb_sunny, size: 40, color: Colors.orange),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text('Sun'),
+              ],
+            ),
+          ),
+          
+          // PV Modules
+          Positioned(
+            top: 120,
+            left: 120,
+            child: Column(
+              children: [
+                Container(
+                  width: 120,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade800,
+                    border: Border.all(color: Colors.grey.shade600),
+                  ),
+                  child: GridView.count(
+                    crossAxisCount: 3,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: List.generate(6, (index) {
+                      return Container(
+                        margin: const EdgeInsets.all(2),
+                        color: Colors.blue.shade900,
+                      );
+                    }),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text('PV Array'),
+              ],
+            ),
+          ),
+          
+          // Inverter
+          Positioned(
+            top: 120,
+            right: 250,
+            child: Column(
+              children: [
+                Container(
+                  width: 60,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    border: Border.all(color: Colors.grey.shade600),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.power, size: 24, color: Colors.grey.shade700),
+                      const SizedBox(height: 4),
+                      Container(
+                        width: 40,
+                        height: 6,
+                        color: Colors.green,
                       ),
-                    ),
-                    Positioned(
-                      top: 5,
-                      child: Container(
-                        width: 20,
-                        height: 10,
+                      const SizedBox(height: 2),
+                      Container(
+                        width: 40,
+                        height: 6,
+                        color: Colors.green,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text('Inverter'),
+              ],
+            ),
+          ),
+          
+          // Battery (if exists)
+          if (widget.batteryCapacity != null)
+            Positioned(
+              top: 240,
+              right: 150,
+              child: Column(
+                children: [
+                  Stack(
+                    alignment: Alignment.bottomCenter,
+                    children: [
+                      Container(
+                        width: 60,
+                        height: 80,
                         decoration: BoxDecoration(
-                          color
+                          color: Colors.grey.shade200,
+                          border: Border.all(color: Colors.grey.shade500),
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(4),
+                            topRight: Radius.circular(4),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        width: 60,
+                        height: 80 * _batteryStateOfCharge / 100,
+                        decoration: BoxDecoration(
+                          color: _getBatteryColor(_batteryStateOfCharge),
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(4),
+                            topRight: Radius.circular(4),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: -5,
+                        child: Container(
+                          width: 20,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade500,
+                            borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(2),
+                              topRight: Radius.circular(2),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  const Text('Battery'),
+                  Text('${_batteryStateOfCharge.toStringAsFixed(0)}%'),
+                ],
+              ),
+            ),
+          
+          // House/Load
+          Positioned(
+            top: 120,
+            right: 60,
+            child: Column(
+              children: [
+                SizedBox(
+                  width: 80,
+                  height: 80,
+                  child: CustomPaint(
+                    painter: HousePainter(),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text('Home'),
+              ],
+            ),
+          ),
+          
+          // Grid
+          Positioned(
+            bottom: 40,
+            right: 60,
+            child: Column(
+              children: [
+                Icon(Icons.electrical_services, size: 60, color: Colors.grey.shade700),
+                const Text('Grid'),
+              ],
+            ),
+          ),
+          
+          // Energy flow arrows
+          _buildEnergyFlowArrows(),
+          
+          // Energy flow legends
+          Positioned(
+            bottom: 20,
+            left: 20,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildFlowLegend('PV Generation', Colors.yellow),
+                const SizedBox(height: 4),
+                _buildFlowLegend('Home Consumption', Colors.green),
+                const SizedBox(height: 4),
+                _buildFlowLegend('Grid Export', Colors.red),
+                if (widget.batteryCapacity != null) ...[
+                  const SizedBox(height: 4),
+                  _buildFlowLegend('Battery Charge/Discharge', Colors.blue),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildEnergyFlowArrows() {
+    // This method would draw animated arrows showing the energy flow
+    // For simplicity, we're just creating static arrows here
+    return Stack(
+      children: [
+        // PV to Inverter arrow
+        _buildArrow(
+          start: const Offset(200, 160),
+          end: const Offset(250, 160),
+          color: Colors.yellow,
+          width: 3.0,
+        ),
+        
+        // Inverter to Home arrow
+        _buildArrow(
+          start: const Offset(310, 150),
+          end: const Offset(360, 150),
+          color: Colors.green,
+          width: 3.0,
+        ),
+        
+        // Inverter to Battery arrow (if battery exists)
+        if (widget.batteryCapacity != null && _currentBatteryCharge > 0)
+          _buildArrow(
+            start: const Offset(280, 200),
+            end: const Offset(280, 260),
+            color: Colors.blue,
+            width: 3.0,
+          ),
+        
+        // Battery to Inverter arrow (if battery exists and discharging)
+        if (widget.batteryCapacity != null && _currentBatteryCharge < 0)
+          _buildArrow(
+            start: const Offset(260, 260),
+            end: const Offset(260, 200),
+            color: Colors.blue,
+            width: 3.0,
+          ),
+        
+        // Inverter to Grid arrow (if exporting)
+        if (_currentGridExport > 0)
+          _buildArrow(
+            start: const Offset(280, 320),
+            end: const Offset(280, 360),
+            color: Colors.red,
+            width: 3.0,
+          ),
+        
+        // Grid to Home arrow (if importing)
+        if (_currentGridExport == 0)
+          _buildArrow(
+            start: const Offset(360, 210),
+            end: const Offset(360, 360),
+            color: Colors.green,
+            width: 3.0,
+          ),
+        
+        // Sun to PV arrow
+        _buildArrow(
+          start: const Offset(80, 70),
+          end: const Offset(140, 120),
+          color: Colors.yellow,
+          width: 3.0,
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildArrow({
+    required Offset start,
+    required Offset end,
+    required Color color,
+    required double width,
+  }) {
+    return CustomPaint(
+      painter: ArrowPainter(
+        startPoint: start,
+        endPoint: end,
+        color: color,
+        strokeWidth: width,
+      ),
+      child: const SizedBox.expand(),
+    );
+  }
+  
+  Widget _buildFlowLegend(String label, Color color) {
+    return Row(
+      children: [
+        Container(
+          width: 16,
+          height: 4,
+          color: color,
+        ),
+        const SizedBox(width: 8),
+        Text(label, style: const TextStyle(fontSize: 12)),
+      ],
+    );
+  }
+  
+  Widget _buildEnergyFlowMetrics() {
+    // Create a card with energy flow metrics (generation, consumption, etc.)
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Energy Flow Metrics',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 16),
+            
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildMetricColumn(
+                  'PV Generation',
+                  '${_currentPower.toStringAsFixed(1)} kW',
+                  Icons.solar_power,
+                  Colors.amber,
+                ),
+                _buildMetricColumn(
+                  'Self-Consumption',
+                  '${_currentSelfConsumption.toStringAsFixed(0)}%',
+                  Icons.home,
+                  Colors.green,
+                ),
+                _buildMetricColumn(
+                  'Grid Export',
+                  '${_currentGridExport.toStringAsFixed(1)} kW',
+                  Icons.arrow_upward,
+                  Colors.red,
+                ),
+                if (widget.batteryCapacity != null)
+                  _buildMetricColumn(
+                    'Battery',
+                    _currentBatteryCharge > 0 
+                        ? '+${_currentBatteryCharge.toStringAsFixed(1)} kW'
+                        : '${_currentBatteryCharge.toStringAsFixed(1)} kW',
+                    _currentBatteryCharge > 0 ? Icons.arrow_downward : Icons.arrow_upward,
+                    Colors.blue,
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildProductionChart() {
+    // Choose which chart to show based on selected timeframe
+    switch (_selectedTimeframe) {
+      case 0: // Day
+        return _buildDailyProductionChart();
+      case 1: // Month
+        return _buildMonthlyProductionChart();
+      case 2: // Year
+        return _buildYearlyProductionChart();
+      case 3: // Lifetime
+        return _buildLifetimeProductionChart();
+      default:
+        return _buildMonthlyProductionChart();
+    }
+  }
+  
+  Widget _buildDailyProductionChart() {
+    // Get hourly data for the selected month
+    final hourlyByMonth = _simulationResults['hourlyByMonth'] as Map<String, List<double>>? ?? {};
+    
+    // Default to current month if no month is selected
+    final hourlyData = hourlyByMonth[_selectedMonth] ?? 
+        hourlyByMonth[DateFormat('MMMM').format(DateTime.now())] ?? 
+        List<double>.filled(24, 0);
+    
+    return LineChart(
+      LineChartData(
+        gridData: const FlGridData(
+          show: true,
+          drawVerticalLine: false,
+        ),
+        titlesData: FlTitlesData(
+          show: true,
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                final hour = value.toInt();
+                if (hour % 3 == 0) {
+                  return SideTitleWidget(
+                    axisSide: meta.axisSide,
+                    space: 8,
+                    child: Text(
+                      '$hour:00',
+                      style: const TextStyle(fontSize: 10),
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+              reservedSize: 30,
+            ),
+          ),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                return SideTitleWidget(
+                  axisSide: meta.axisSide,
+                  space: 8,
+                  child: Text(
+                    '${value.toStringAsFixed(1)} kWh',
+                    style: const TextStyle(fontSize: 10),
+                  ),
+                );
+              },
+              reservedSize: 40,
+            ),
+          ),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+        ),
+        borderData: FlBorderData(
+          show: true,
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        minY: 0,
+        lineBarsData: [
+          LineChartBarData(
+            spots: List.generate(hourlyData.length, (index) {
+              return FlSpot(index.toDouble(), hourlyData[index]);
+            }),
+            isCurved: true,
+            color: Colors.blue,
+            barWidth: 3,
+            isStrokeCapRound: true,
+            dotData: const FlDotData(show: false),
+            belowBarData: BarAreaData(
+              show: true,
+              color: Colors.blue.withOpacity(0.2),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildMonthlyProductionChart() {
+    final monthlyProduction = _simulationResults['monthlyProduction'] as Map<String, double>? ?? {};
+    
+    if (_selectedMonth == 'Annual') {
+      // Show all months
+      return BarChart(
+        BarChartData(
+          alignment: BarChartAlignment.spaceAround,
+          maxY: _getMaxMonthlyProduction(monthlyProduction) * 1.1,
+          barTouchData: BarTouchData(
+            enabled: true,
+            touchTooltipData: BarTouchTooltipData(
+              tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
+              getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                final month = _getMonthName(group.x.toInt());
+                final value = rod.toY;
+                return BarTooltipItem(
+                  '$month\n${value.round()} kWh',
+                  const TextStyle(color: Colors.white),
+                );
+              },
+            ),
+          ),
+          titlesData: FlTitlesData(
+            show: true,
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                getTitlesWidget: (value, meta) {
+                  return SideTitleWidget(
+                    axisSide: meta.axisSide,
+                    space: 4,
+                    child: Text(
+                      _getMonthName(value.toInt())[0], // First letter of month
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  );
+                },
+                reservedSize: 20,
+              ),
+            ),
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                getTitlesWidget: (value, meta) {
+                  return SideTitleWidget(
+                    axisSide: meta.axisSide,
+                    space: 8,
+                    child: Text(
+                      '${value.toInt()} kWh',
+                      style: const TextStyle(fontSize: 10),
+                    ),
+                  );
+                },
+                reservedSize: 40,
+              ),
+            ),
+            topTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            rightTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+          ),
+          gridData: const FlGridData(
+            show: true,
+            horizontalInterval: 500,
+          ),
+          borderData: FlBorderData(show: false),
+          barGroups: _generateMonthlyBarGroups(monthlyProduction),
+        ),
+      );
+    } else {
+      // Show daily breakdown for selected month
+      return _buildDailyBreakdownForMonth(_selectedMonth);
+    }
+  }
+  
+  Widget _buildYearlyProductionChart() {
+    // This would show yearly production with degradation over time
+    return LineChart(
+      LineChartData(
+        gridData: const FlGridData(
+          show: true,
+          horizontalInterval: 1000,
+        ),
+        titlesData: FlTitlesData(
+          show: true,
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                final year = value.toInt() + 1;
+                if (year % 5 == 0 || year == 1 || year == 25) {
+                  return SideTitleWidget(
+                    axisSide: meta.axisSide,
+                    space: 8,
+                    child: Text(
+                      'Year $year',
+                      style: const TextStyle(fontSize: 10),
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+              reservedSize: 30,
+            ),
+          ),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                return SideTitleWidget(
+                  axisSide: meta.axisSide,
+                  space: 8,
+                  child: Text(
+                    '${value.toInt()} kWh',
+                    style: const TextStyle(fontSize: 10),
+                  ),
+                );
+              },
+              reservedSize: 40,
+            ),
+          ),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+        ),
+        borderData: FlBorderData(
+          show: true,
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        minY: 0,
+        lineBarsData: [
+          LineChartBarData(
+            spots: _generateYearlyDegradationData(),
+            isCurved: false,
+            color: Colors.green,
+            barWidth: 3,
+            isStrokeCapRound: true,
+            dotData: const FlDotData(show: true),
+            belowBarData: BarAreaData(
+              show: true,
+              color: Colors.green.withOpacity(0.2),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildLifetimeProductionChart() {
+    // Show cumulative production over lifetime
+    final annualProduction = _simulationResults['annualProduction'] as double? ?? 0.0;
+    
+    return LineChart(
+      LineChartData(
+        gridData: const FlGridData(
+          show: true,
+          horizontalInterval: 20000,
+        ),
+        titlesData: FlTitlesData(
+          show: true,
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                final year = value.toInt() + 1;
+                if (year % 5 == 0 || year == 1 || year == 25) {
+                  return SideTitleWidget(
+                    axisSide: meta.axisSide,
+                    space: 8,
+                    child: Text(
+                      'Year $year',
+                      style: const TextStyle(fontSize: 10),
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+              reservedSize: 30,
+            ),
+          ),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                return SideTitleWidget(
+                  axisSide: meta.axisSide,
+                  space: 8,
+                  child: Text(
+                    '${value.toInt() / 1000}k kWh',
+                    style: const TextStyle(fontSize: 10),
+                  ),
+                );
+              },
+              reservedSize: 40,
+            ),
+          ),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+        ),
+        borderData: FlBorderData(
+          show: true,
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        minY: 0,
+        lineBarsData: [
+          LineChartBarData(
+            spots: _generateCumulativeProductionData(annualProduction),
+            isCurved: false,
+            color: Colors.purple,
+            barWidth: 3,
+            isStrokeCapRound: true,
+            dotData: const FlDotData(show: false),
+            belowBarData: BarAreaData(
+              show: true,
+              color: Colors.purple.withOpacity(0.2),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildDailyBreakdownForMonth(String month) {
+    // This would show a daily breakdown for the selected month
+    // For simplicity, we'll generate random values
+    final daysInMonth = _getDaysInMonth(month);
+    final random = math.Random(month.hashCode); // Seed for consistent values
+    
+    final avgDailyProduction = (_simulationResults['monthlyProduction'] as Map<String, double>)[month] ?? 0.0;
+    final avgDaily = avgDailyProduction / daysInMonth;
+    
+    return BarChart(
+      BarChartData(
+        alignment: BarChartAlignment.spaceAround,
+        maxY: avgDaily * 1.5,
+        barTouchData: BarTouchData(
+          enabled: true,
+          touchTooltipData: BarTouchTooltipData(
+            tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
+            getTooltipItem: (group, groupIndex, rod, rodIndex) {
+              final day = group.x.toInt() + 1;
+              final value = rod.toY;
+              return BarTooltipItem(
+                'Day $day\n${value.toStringAsFixed(1)} kWh',
+                const TextStyle(color: Colors.white),
+              );
+            },
+          ),
+        ),
+        titlesData: FlTitlesData(
+          show: true,
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                final day = value.toInt() + 1;
+                if (day % 5 == 0 || day == 1 || day == daysInMonth) {
+                  return SideTitleWidget(
+                    axisSide: meta.axisSide,
+                    space: 4,
+                    child: Text(
+                      day.toString(),
+                      style: const TextStyle(fontSize: 10),
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+              reservedSize: 20,
+            ),
+          ),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                return SideTitleWidget(
+                  axisSide: meta.axisSide,
+                  space: 8,
+                  child: Text(
+                    '${value.toStringAsFixed(1)} kWh',
+                    style: const TextStyle(fontSize: 10),
+                  ),
+                );
+              },
+              reservedSize: 40,
+            ),
+          ),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+        ),
+        gridData: const FlGridData(
+          show: true,
+          horizontalInterval: 10,
+        ),
+        borderData: FlBorderData(show: false),
+        barGroups: List.generate(daysInMonth, (index) {
+          // Randomize daily production around the average
+          final variationFactor = 0.7 + random.nextDouble() * 0.6; // 70-130%
+          final dayValue = avgDaily * variationFactor;
+          
+          return BarChartGroupData(
+            x: index,
+            barRods: [
+              BarChartRodData(
+                toY: dayValue,
+                color: Colors.teal,
+                width: 8,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(4),
+                  topRight: Radius.circular(4),
+                ),
+              ),
+            ],
+          );
+        }),
+      ),
+    );
+  }
+  
+  Widget _buildLossesChart() {
+    // Create a pie chart showing the system losses
+    final losses = List<PieChartSectionData>.empty(growable: true);
+    
+    // Add each type of loss
+    if (widget.losses.containsKey('soiling')) {
+      losses.add(PieChartSectionData(
+        title: 'Soiling',
+        value: widget.losses['soiling']! * 100,
+        color: Colors.brown,
+        radius: 100,
+        titleStyle: const TextStyle(
+          color: Colors.white,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
+      ));
+    }
+    
+    if (widget.losses.containsKey('mismatch')) {
+      losses.add(PieChartSectionData(
+        title: 'Mismatch',
+        value: widget.losses['mismatch']! * 100,
+        color: Colors.purple,
+        radius: 100,
+        titleStyle: const TextStyle(
+          color: Colors.white,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
+      ));
+    }
+    
+    if (widget.losses.containsKey('wiring')) {
+      losses.add(PieChartSectionData(
+        title: 'Wiring',
+        value: widget.losses['wiring']! * 100,
+        color: Colors.orange,
+        radius: 100,
+        titleStyle: const TextStyle(
+          color: Colors.white,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
+      ));
+    }
+    
+    if (widget.losses.containsKey('inverter')) {
+      losses.add(PieChartSectionData(
+        title: 'Inverter',
+        value: widget.losses['inverter']! * 100,
+        color: Colors.blue,
+        radius: 100,
+        titleStyle: const TextStyle(
+          color: Colors.white,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
+      ));
+    }
+    
+    if (widget.losses.containsKey('temperature')) {
+      losses.add(PieChartSectionData(
+        title: 'Temperature',
+        value: widget.losses['temperature']! * 100,
+        color: Colors.red,
+        radius: 100,
+        titleStyle: const TextStyle(
+          color: Colors.white,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
+      ));
+    }
+    
+    // Add availability loss if present
+    if (widget.losses.containsKey('availability')) {
+      losses.add(PieChartSectionData(
+        title: 'Availability',
+        value: widget.losses['availability']! * 100,
+        color: Colors.amber,
+        radius: 100,
+        titleStyle: const TextStyle(
+          color: Colors.white,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
+      ));
+    }
+    
+    return PieChart(
+      PieChartData(
+        sectionsSpace: 2,
+        centerSpaceRadius: 40,
+        sections: losses,
+      ),
+    );
+  }
+  
+  Widget _buildPerformanceComparisonChart() {
+    // Bar chart comparing the system to regional and optimal benchmarks
+    final systemPerformance = _simulationResults['specificYield'] as double? ?? 0.0;
+    
+    // Fictional benchmarks - in a real app, these would come from actual data
+    const regionalAverage = 1100.0;
+    const optimalSystem = 1500.0;
+    const theoreticalMax = 1800.0;
+    
+    return BarChart(
+      BarChartData(
+        alignment: BarChartAlignment.spaceAround,
+        maxY: theoreticalMax * 1.1,
+        barTouchData: BarTouchData(
+          enabled: true,
+          touchTooltipData: BarTouchTooltipData(
+            tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
+            getTooltipItem: (group, groupIndex, rod, rodIndex) {
+              String title;
+              switch (group.x.toInt()) {
+                case 0:
+                  title = 'Your System';
+                  break;
+                case 1:
+                  title = 'Regional Average';
+                  break;
+                case 2:
+                  title = 'Optimal System';
+                  break;
+                case 3:
+                  title = 'Theoretical Max';
+                  break;
+                default:
+                  title = 'Unknown';
+              }
+              return BarTooltipItem(
+                '$title\n${rod.toY.round()} kWh/kWp',
+                const TextStyle(color: Colors.white),
+              );
+            },
+          ),
+        ),
+        titlesData: FlTitlesData(
+          show: true,
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                String title;
+                switch (value.toInt()) {
+                  case 0:
+                    title = 'Your System';
+                    break;
+                  case 1:
+                    title = 'Regional Avg';
+                    break;
+                  case 2:
+                    title = 'Optimal';
+                    break;
+                  case 3:
+                    title = 'Max';
+                    break;
+                  default:
+                    title = '';
+                }
+                return SideTitleWidget(
+                  axisSide: meta.axisSide,
+                  space: 4,
+                  child: Text(
+                    title,
+                    style: const TextStyle(fontSize: 10),
+                  ),
+                );
+              },
+              reservedSize: 30,
+            ),
+          ),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                return SideTitleWidget(
+                  axisSide: meta.axisSide,
+                  space: 8,
+                  child: Text(
+                    '${value.toInt()} kWh/kWp',
+                    style: const TextStyle(fontSize: 10),
+                  ),
+                );
+              },
+              reservedSize: 40,
+            ),
+          ),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+        ),
+        gridData: const FlGridData(
+          show: true,
+          horizontalInterval: 300,
+        ),
+        borderData: FlBorderData(show: false),
+        barGroups: [
+          BarChartGroupData(
+            x: 0,
+            barRods: [
+              BarChartRodData(
+                toY: systemPerformance,
+                color: Colors.blue,
+                width: 30,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(4),
+                  topRight: Radius.circular(4),
+                ),
+              ),
+            ],
+          ),
+          BarChartGroupData(
+            x: 1,
+            barRods: [
+              BarChartRodData(
+                toY: regionalAverage,
+                color: Colors.grey,
+                width: 30,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(4),
+                  topRight: Radius.circular(4),
+                ),
+              ),
+            ],
+          ),
+          BarChartGroupData(
+            x: 2,
+            barRods: [
+              BarChartRodData(
+                toY: optimalSystem,
+                color: Colors.green,
+                width: 30,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(4),
+                  topRight: Radius.circular(4),
+                ),
+              ),
+            ],
+          ),
+          BarChartGroupData(
+            x: 3,
+            barRods: [
+              BarChartRodData(
+                toY: theoreticalMax,
+                color: Colors.amber,
+                width: 30,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(4),
+                  topRight: Radius.circular(4),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildSystemDetailsDialog() {
+    return AlertDialog(
+      title: const Text('System Details'),
+      content: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // PV Module Details
+            const Text(
+              'PV Module',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            _buildDetailRow('Manufacturer', widget.module.manufacturer),
+            _buildDetailRow('Model', widget.module.model),
+            _buildDetailRow('Power Rating', '${widget.module.powerRating} W'),
+            _buildDetailRow('Efficiency', '${(widget.module.efficiency * 100).toStringAsFixed(1)}%'),
+            _buildDetailRow('Dimensions', '${widget.module.length} × ${widget.module.width} m'),
+            _buildDetailRow('Temperature Coefficient', '${widget.module.temperatureCoefficient}%/°C'),
+            _buildDetailRow('NOCT', '${widget.module.nominalOperatingCellTemp}°C'),
+            
+            const Divider(),
+            
+            // Inverter Details
+            const Text(
+              'Inverter',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            _buildDetailRow('Manufacturer', widget.inverter.manufacturer),
+            _buildDetailRow('Model', widget.inverter.model),
+            _buildDetailRow('AC Power Rating', '${(widget.inverter.ratedPowerAC / 1000).toStringAsFixed(1)} kW'),
+            _buildDetailRow('Max DC Power', '${(widget.inverter.maxDCPower / 1000).toStringAsFixed(1)} kW'),
+            _buildDetailRow('Efficiency', '${(widget.inverter.efficiency * 100).toStringAsFixed(1)}%'),
+            _buildDetailRow('MPP Voltage Range', '${widget.inverter.minMPPVoltage}-${widget.inverter.maxMPPVoltage} V'),
+            _buildDetailRow('MPP Trackers', '${widget.inverter.numberOfMPPTrackers}'),
+            
+            const Divider(),
+            
+            // System Configuration
+            const Text(
+              'System Configuration',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            _buildDetailRow('Modules in Series', '${widget.modulesInSeries}'),
+            _buildDetailRow('Strings in Parallel', '${widget.stringsInParallel}'),
+            _buildDetailRow('Total Modules', '${widget.modulesInSeries * widget.stringsInParallel}'),
+            _buildDetailRow('System Size', '${(_simulationResults['systemSizeKw'] as double? ?? 0.0).toStringAsFixed(2)} kWp'),
+            _buildDetailRow('Tilt Angle', '${widget.tiltAngle.toStringAsFixed(1)}°'),
+            _buildDetailRow('Azimuth Angle', '${widget.azimuthAngle.toStringAsFixed(1)}°'),
+            
+            if (widget.batteryCapacity != null) ...[
+              const Divider(),
+              
+              // Battery Details
+              const Text(
+                'Battery Storage',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              _buildDetailRow('Battery Capacity', '${widget.batteryCapacity} kWh'),
+            ],
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Close'),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildInfoTile(String title, String value, IconData icon, Color color) {
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 32),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 12),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildMetricBox(String title, String value, Color? color) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Column(
+        children: [
+          Text(
+            title,
+            style: const TextStyle(fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildEnergyCounter(String label, double value, Color color) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '${value.toStringAsFixed(1)} kWh',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildMetricColumn(String title, String value, IconData icon, Color color) {
+    return Column(
+      children: [
+        Icon(icon, color: color, size: 24),
+        const SizedBox(height: 4),
+        Text(
+          title,
+          style: const TextStyle(fontSize: 12),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildSavingsMetric(String title, String value, IconData icon, Color color) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 32),
+            const SizedBox(width: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(fontSize: 12),
+                ),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label),
+          Text(
+            value,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Color _getPerformanceColor(double performanceRatio) {
+    if (performanceRatio >= 80) {
+      return Colors.green;
+    } else if (performanceRatio >= 70) {
+      return Colors.orange;
+    } else {
+      return Colors.red;
+    }
+  }
+  
+  Color _getYieldColor(double specificYield) {
+    if (specificYield >= 1400) {
+      return Colors.green;
+    } else if (specificYield >= 1100) {
+      return Colors.blue;
+    } else if (specificYield >= 900) {
+      return Colors.orange;
+    } else {
+      return Colors.red;
+    }
+  }
+  
+  Color _getBatteryColor(double stateOfCharge) {
+    if (stateOfCharge >= 80) {
+      return Colors.green;
+    } else if (stateOfCharge >= 50) {
+      return Colors.lightGreen;
+    } else if (stateOfCharge >= 30) {
+      return Colors.orange;
+    } else {
+      return Colors.red;
+    }
+  }
+  
+  List<BarChartGroupData> _generateMonthlyBarGroups(Map<String, double> monthlyEnergy) {
+    return List.generate(12, (index) {
+      final month = _getMonthName(index);
+      final value = monthlyEnergy[month] ?? 0;
+      
+      return BarChartGroupData(
+        x: index,
+        barRods: [
+          BarChartRodData(
+            toY: value,
+            color: Colors.blue,
+            width: 16,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(4),
+              topRight: Radius.circular(4),
+            ),
+          ),
+        ],
+      );
+    });
+  }
+  
+  List<FlSpot> _generateYearlyDegradationData() {
+    final firstYearEnergy = _simulationResults['annualProduction'] as double? ?? 0.0;
+    final spots = <FlSpot>[];
+    
+    for (int year = 1; year <= 25; year++) {
+      // Apply 0.5% annual degradation
+      final degradationFactor = math.pow(0.995, year - 1);
+      final energyInYear = firstYearEnergy * degradationFactor;
+      spots.add(FlSpot(year.toDouble() - 1, energyInYear));
+    }
+    
+    return spots;
+  }
+  
+  List<FlSpot> _generateCumulativeProductionData(double annualProduction) {
+    double cumulativeEnergy = 0;
+    final spots = <FlSpot>[];
+    
+    // Year 0 (starting point)
+    spots.add(const FlSpot(0, 0));
+    
+    for (int year = 1; year <= 25; year++) {
+      // Apply 0.5% annual degradation
+      final degradationFactor = math.pow(0.995, year - 1);
+      final yearlyEnergy = annualProduction * degradationFactor;
+      cumulativeEnergy += yearlyEnergy;
+      spots.add(FlSpot(year.toDouble(), cumulativeEnergy));
+    }
+    
+    return spots;
+  }
+  
+  double _getMaxMonthlyProduction(Map<String, double> monthlyEnergy) {
+    if (monthlyEnergy.isEmpty) return 1000.0;
+    return monthlyEnergy.values.reduce((max, value) => value > max ? value : max);
+  }
+  
+  String _getMonthName(int index) {
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                    'July', 'August', 'September', 'October', 'November', 'December'];
+    return months[index % 12];
+  }
+  
+  int _getDaysInMonth(String month) {
+    switch (month) {
+      case 'January':
+      case 'March':
+      case 'May':
+      case 'July':
+      case 'August':
+      case 'October':
+      case 'December':
+        return 31;
+      case 'April':
+      case 'June':
+      case 'September':
+      case 'November':
+        return 30;
+      case 'February':
+        // Simplified leap year handling
+        final currentYear = DateTime.now().year;
+        final isLeapYear = (currentYear % 4 == 0 && currentYear % 100 != 0) || (currentYear % 400 == 0);
+        return isLeapYear ? 29 : 28;
+      default:
+        return 30;
+    }
+  }
+}
+
+// Helper class for painting a house icon
+class HousePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.grey.shade700
+      ..style = PaintingStyle.fill;
+    
+    // Roof
+    final roofPath = Path()
+      ..moveTo(size.width / 2, 0)
+      ..lineTo(0, size.height * 0.4)
+      ..lineTo(size.width, size.height * 0.4)
+      ..close();
+    
+    canvas.drawPath(roofPath, paint);
+    
+    // House body
+    final bodyRect = Rect.fromLTRB(
+      size.width * 0.15,
+      size.height * 0.4,
+      size.width * 0.85,
+      size.height,
+    );
+    
+    canvas.drawRect(bodyRect, paint);
+    
+    // Door
+    final doorPaint = Paint()
+      ..color = Colors.brown
+      ..style = PaintingStyle.fill;
+    
+    final doorRect = Rect.fromLTRB(
+      size.width * 0.4,
+      size.height * 0.65,
+      size.width * 0.6,
+      size.height,
+    );
+    
+    canvas.drawRect(doorRect, doorPaint);
+    
+    // Window
+    final windowPaint = Paint()
+      ..color = Colors.lightBlueAccent
+      ..style = PaintingStyle.fill;
+    
+    final windowRect = Rect.fromLTRB(
+      size.width * 0.25,
+      size.height * 0.5,
+      size.width * 0.45,
+      size.height * 0.6,
+    );
+    
+    canvas.drawRect(windowRect, windowPaint);
+  }
+  
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// Helper class for painting arrows
+class ArrowPainter extends CustomPainter {
+  final Offset startPoint;
+  final Offset endPoint;
+  final Color color;
+  final double strokeWidth;
+  
+  ArrowPainter({
+    required this.startPoint,
+    required this.endPoint,
+    required this.color,
+    required this.strokeWidth,
+  });
+  
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth;
+    
+    // Draw the line
+    canvas.drawLine(startPoint, endPoint, paint);
+    
+    // Calculate the angle of the line
+    final angle = math.atan2(
+      endPoint.dy - startPoint.dy,
+      endPoint.dx - startPoint.dx,
+    );
+    
+    // Calculate arrow head points
+    final arrowSize = 10.0;
+    final arrowPoint1 = Offset(
+      endPoint.dx - arrowSize * math.cos(angle - math.pi / 6),
+      endPoint.dy - arrowSize * math.sin(angle - math.pi / 6),
+    );
+    
+    final arrowPoint2 = Offset(
+      endPoint.dx - arrowSize * math.cos(angle + math.pi / 6),
+      endPoint.dy - arrowSize * math.sin(angle + math.pi / 6),
+    );
+    
+    // Draw the arrow head
+    final arrowPath = Path()
+      ..moveTo(endPoint.dx, endPoint.dy)
+      ..lineTo(arrowPoint1.dx, arrowPoint1.dy)
+      ..lineTo(arrowPoint2.dx, arrowPoint2.dy)
+      ..close();
+    
+    canvas.drawPath(arrowPath, paint..style = PaintingStyle.fill);
+  }
+  
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+class MonthlyProductionBarChart extends StatelessWidget {
+  final Map<String, double> monthlyEnergy;
+  
+  const MonthlyProductionBarChart({
+    super.key,
+    required this.monthlyEnergy,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return BarChart(
+      BarChartData(
+        alignment: BarChartAlignment.spaceAround,
+        maxY: _getMaxMonthlyProduction() * 1.1,
+        barTouchData: BarTouchData(
+          enabled: true,
+          touchTooltipData: BarTouchTooltipData(
+            tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
+            getTooltipItem: (group, groupIndex, rod, rodIndex) {
+              final month = _getMonthName(group.x.toInt());
+              final value = rod.toY;
+              return BarTooltipItem(
+                '$month\n${value.round()} kWh',
+                const TextStyle(color: Colors.white),
+              );
+            },
+          ),
+        ),
+        titlesData: FlTitlesData(
+          show: true,
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                return SideTitleWidget(
+                  axisSide: meta.axisSide,
+                  space: 4,
+                  child: Text(
+                    _getMonthName(value.toInt())[0], // First letter of month
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                );
+              },
+              reservedSize: 20,
+            ),
+          ),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                return SideTitleWidget(
+                  axisSide: meta.axisSide,
+                  space: 8,
+                  child: Text(
+                    '${value.toInt()} kWh',
+                    style: const TextStyle(fontSize: 10),
+                  ),
+                );
+              },
+              reservedSize: 40,
+            ),
+          ),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+        ),
+        gridData: const FlGridData(
+          show: true,
+          horizontalInterval: 300,
+        ),
+        borderData: FlBorderData(show: false),
+        barGroups: _generateBarGroups(),
+      ),
+    );
+  }
+  
+  List<BarChartGroupData> _generateBarGroups() {
+    return List.generate(12, (index) {
+      final month = _getMonthName(index);
+      final value = monthlyEnergy[month] ?? 0;
+      
+      return BarChartGroupData(
+        x: index,
+        barRods: [
+          BarChartRodData(
+            toY: value,
+            color: Colors.blue,
+            width: 16,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(4),
+              topRight: Radius.circular(4),
+            ),
+          ),
+        ],
+      );
+    });
+  }
+  
+  double _getMaxMonthlyProduction() {
+    if (monthlyEnergy.isEmpty) return 1000.0;
+    return monthlyEnergy.values.reduce((max, value) => value > max ? value : max);
+  }
+  
+  String _getMonthName(int index) {
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                    'July', 'August', 'September', 'October', 'November', 'December'];
+    return months[index % 12];
+  }
+}
+          fontWeight: FontWeight.bold,
+        ),
+      ));
+    }
+    
+    if (widget.losses.containsKey('shading')) {
+      losses.add(PieChartSectionData(
+        title: 'Shading',
+        value: widget.losses['shading']! * 100,
+        color: Colors.grey,
+        radius: 100,
+        titleStyle: const TextStyle(
+          color: Colors.white,
+          fontSize: 12,
