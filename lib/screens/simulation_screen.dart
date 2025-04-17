@@ -5,6 +5,12 @@ import 'package:go_router/go_router.dart';
 import 'package:solarsim/models/project.dart';
 import 'package:solarsim/providers/projects_provider.dart';
 import 'package:solarsim/models/simulation_result.dart';
+import 'package:solarsim/providers/simulation_provider.dart';
+import 'package:solarsim/widgets/module_selection_dialog.dart';
+import 'package:solarsim/widgets/inverter_selection_dialog.dart';
+
+
+
 // Import other necessary models and providers
 
 class SimulationScreen extends ConsumerStatefulWidget {
@@ -267,7 +273,21 @@ class _SimulationScreenState extends ConsumerState<SimulationScreen> with Single
                     title: const Text('Select Module'),
                     subtitle: const Text('No module selected'),
                     trailing: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => ModuleSelectionDialog(
+                            onModuleSelected: (module) {
+                              // Handle selected module
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Selected module: ${module.manufacturer} ${module.model}'),
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
                       child: const Text('Select'),
                     ),
                   ),
@@ -322,7 +342,21 @@ class _SimulationScreenState extends ConsumerState<SimulationScreen> with Single
                     title: const Text('Select Inverter'),
                     subtitle: const Text('No inverter selected'),
                     trailing: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => InverterSelectionDialog(
+                            onInverterSelected: (inverter) {
+                              // Handle selected inverter
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Selected inverter: ${inverter.manufacturer} ${inverter.model}'),
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
                       child: const Text('Select'),
                     ),
                   ),
@@ -464,34 +498,123 @@ class _SimulationScreenState extends ConsumerState<SimulationScreen> with Single
   }
   
   Widget _buildResultsTab(BuildContext context, Project project) {
-    // This tab would show simulation results if available
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.bar_chart,
-            size: 64,
-            color: Colors.grey,
+    final simulationAsync = ref.watch(runSimulationProvider(widget.simulationId));
+    
+    return simulationAsync.when(
+      data: (simulationResult) {
+        // Show simulation results
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Simulation Results',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 16),
+              
+              // Energy production overview
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Energy Production',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 16),
+                      
+                      _buildInfoRow('Annual Energy', '${simulationResult.annualEnergy.toStringAsFixed(0)} kWh'),
+                      _buildInfoRow('Performance Ratio', '${(simulationResult.performanceRatio * 100).toStringAsFixed(1)}%'),
+                      
+                      const SizedBox(height: 16),
+                      
+                      // Placeholder for chart
+                      Container(
+                        height: 200,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        alignment: Alignment.center,
+                        child: const Text('Monthly energy chart would be displayed here'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              
+              const SizedBox(height: 16),
+              
+              // Financial overview
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Financial Overview',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 16),
+                      
+                      _buildInfoRow('LCOE', '\$${simulationResult.financialMetrics['lcoe']?.toStringAsFixed(3)}/kWh'),
+                      _buildInfoRow('Payback Period', '${simulationResult.financialMetrics['paybackPeriod']?.toStringAsFixed(1)} years'),
+                      _buildInfoRow('NPV', '\$${simulationResult.financialMetrics['npv']?.toStringAsFixed(0)}'),
+                      _buildInfoRow('IRR', '${((simulationResult.financialMetrics['irr'] ?? 0) * 100).toStringAsFixed(1)}%'),
+                      
+                      const SizedBox(height: 16),
+                      
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.assignment),
+                        label: const Text('View Detailed Report'),
+                        onPressed: () {
+                          context.go('/report/${widget.simulationId}');
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          Text(
-            'No Simulation Results Yet',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Run a simulation to see results here',
-            style: TextStyle(color: Colors.grey),
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton.icon(
-            icon: const Icon(Icons.play_arrow),
-            label: const Text('Run Simulation'),
-            onPressed: () => _runSimulation(context),
-          ),
-        ],
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stack) => Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.error_outline,
+              size: 64,
+              color: Colors.red,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Simulation Error',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'An error occurred while running the simulation.',
+              style: TextStyle(color: Colors.grey),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.refresh),
+              label: const Text('Try Again'),
+              onPressed: () => _runSimulation(context),
+            ),
+          ],
+        ),
       ),
+      skipLoadingOnRefresh: false,
+      skipLoadingOnReload: false,
     );
   }
   
@@ -604,31 +727,58 @@ class _SimulationScreenState extends ConsumerState<SimulationScreen> with Single
     );
   }
   
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label),
+          Text(
+            value,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
+  }
+  
   void _runSimulation(BuildContext context) {
     setState(() {
       _isSimulating = true;
     });
     
-    // In a real app, this would call a simulation service
-    // For now, we'll just simulate a delay
-    Future.delayed(const Duration(seconds: 3), () {
-      setState(() {
-        _isSimulating = false;
-      });
-      
-      // Navigate to the results tab
-      _tabController.animateTo(3);
-      
-      // Show a success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Simulation completed successfully!'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      
-      // In a real app, this would navigate to the report screen
-      // context.go('/report/${widget.simulationId}');
-    });
+    // Call the actual simulation service using the provider
+    ref.read(runSimulationProvider(widget.simulationId).future).then(
+      (simulationResult) {
+        setState(() {
+          _isSimulating = false;
+        });
+        
+        // Navigate to the results tab
+        _tabController.animateTo(3);
+        
+        // Show a success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Simulation completed successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      },
+      onError: (error) {
+        setState(() {
+          _isSimulating = false;
+        });
+        
+        // Show an error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Simulation failed: $error'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      },
+    );
   }
 }

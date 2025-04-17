@@ -6,6 +6,12 @@ import 'package:solarsim/models/project.dart';
 import 'package:solarsim/providers/projects_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:solarsim/services/project_service.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:solarsim/widgets/module_selection_dialog.dart';
+import 'package:solarsim/widgets/inverter_selection_dialog.dart';
+import 'package:solarsim/models/solar_module.dart';
+import 'package:solarsim/models/inverter.dart';
 
 class ProjectScreen extends ConsumerWidget {
   final String projectId;
@@ -30,7 +36,7 @@ class ProjectScreen extends ConsumerWidget {
         ],
       ),
       body: projectAsync.when(
-        data: (project) => _buildProjectDetails(context, project),
+        data: (project) => _buildProjectDetails(context, ref, project),
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => Center(
           child: Text('Error: $error'),
@@ -44,7 +50,7 @@ class ProjectScreen extends ConsumerWidget {
     );
   }
   
-  Widget _buildProjectDetails(BuildContext context, Project project) {
+  Widget _buildProjectDetails(BuildContext context, WidgetRef ref, Project project) {
     final dateFormat = DateFormat('MMM d, yyyy');
     
     return SingleChildScrollView(
@@ -98,15 +104,41 @@ class ProjectScreen extends ConsumerWidget {
                   _buildInfoRow('Time Zone', project.location.timeZone),
                   
                   const SizedBox(height: 16),
-                  // Simple map representation - in a real app, use a map widget
+                  // Map display
                   Container(
                     height: 200,
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    alignment: Alignment.center,
-                    child: const Text('Map would be displayed here'),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: FlutterMap(
+                        options: MapOptions(
+                          initialCenter: LatLng(project.location.latitude, project.location.longitude),
+                          initialZoom: 13.0,
+                        ),
+                        children: [
+                          TileLayer(
+                            urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                            subdomains: const ['a', 'b', 'c'],
+                          ),
+                          MarkerLayer(
+                            markers: [
+                              Marker(
+                                width: 80.0,
+                                height: 80.0,
+                                point: LatLng(project.location.latitude, project.location.longitude),
+                                child: const Icon(
+                                  Icons.location_on,
+                                  color: Colors.red,
+                                  size: 40.0,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -128,17 +160,17 @@ class ProjectScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
                   
-                  _buildConfigurationSection(context, 'PV Modules', 
+                  _buildConfigurationSection(context, ref, 'PV Modules', 
                     'No modules configured', Icons.solar_power),
                   
                   const Divider(),
                   
-                  _buildConfigurationSection(context, 'Inverters', 
+                  _buildConfigurationSection(context, ref, 'Inverters', 
                     'No inverters configured', Icons.electrical_services),
                   
                   const Divider(),
                   
-                  _buildConfigurationSection(context, 'Mounting System', 
+                  _buildConfigurationSection(context, ref, 'Mounting System', 
                     'No mounting system configured', Icons.architecture),
                 ],
               ),
@@ -193,6 +225,7 @@ class ProjectScreen extends ConsumerWidget {
   
   Widget _buildConfigurationSection(
     BuildContext context, 
+    WidgetRef ref,
     String title, 
     String emptyMessage, 
     IconData icon,
@@ -213,10 +246,16 @@ class ProjectScreen extends ConsumerWidget {
               icon: const Icon(Icons.add, size: 16),
               label: const Text('Add'),
               onPressed: () {
-                // This would open a dialog to add components
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Add $title dialog would open here')),
-                );
+                if (title == 'PV Modules') {
+                  _showModuleSelectionDialog(context, ref);
+                } else if (title == 'Inverters') {
+                  _showInverterSelectionDialog(context, ref);
+                } else {
+                  // Show mounting system dialog
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Add $title dialog would open here')),
+                  );
+                }
               },
             ),
           ],
@@ -233,6 +272,38 @@ class ProjectScreen extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+  
+  void _showModuleSelectionDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) => ModuleSelectionDialog(
+        onModuleSelected: (module) {
+          // TODO: Update project with selected module
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Selected module: ${module.manufacturer} ${module.model}'),
+            ),
+          );
+        },
+      ),
+    );
+  }
+  
+  void _showInverterSelectionDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) => InverterSelectionDialog(
+        onInverterSelected: (inverter) {
+          // TODO: Update project with selected inverter
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Selected inverter: ${inverter.manufacturer} ${inverter.model}'),
+            ),
+          );
+        },
+      ),
     );
   }
   

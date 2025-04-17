@@ -3,10 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:solarsim/models/solar_module.dart';
 
 class ModuleSelectionDialog extends StatefulWidget {
+    final Function(SolarModule) onModuleSelected;
+
   final SolarModule? initialSelectedModule;
   
   const ModuleSelectionDialog({
     super.key,
+        required this.onModuleSelected,
     this.initialSelectedModule,
   });
 
