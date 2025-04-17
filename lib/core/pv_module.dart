@@ -1,5 +1,5 @@
 // lib/core/pv_module.dart
-import 'dart:math' as math;
+// import 'dart:math' as math;
 import '../models/solar_module.dart';
 
 /// Models the performance of PV modules

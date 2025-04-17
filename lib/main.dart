@@ -1,10 +1,10 @@
-// lib/main.dart
+// lib/main.dart (updated)
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:solarsim/screens/home_screen.dart';
 import 'package:solarsim/screens/project_screen.dart';
-import 'package:solarsim/screens/simulation_screen.dart';
+import 'package:solarsim/screens/enhanced_simulation_screen.dart';
 import 'package:solarsim/screens/report_screen.dart';
 import 'package:solarsim/screens/settings_screen.dart';
 import 'package:solarsim/themes/app_theme.dart';
@@ -38,8 +38,8 @@ final _router = GoRouter(
     ),
     GoRoute(
       path: '/simulation/:id',
-      builder: (context, state) => SimulationScreen(
-        simulationId: state.pathParameters['id']!,
+      builder: (context, state) => EnhancedSimulationScreen(
+        projectId: state.pathParameters['id']!,
       ),
     ),
     GoRoute(
