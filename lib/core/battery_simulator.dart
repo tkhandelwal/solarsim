@@ -2,6 +2,9 @@
 import 'dart:math' as math;
 import '../models/battery_system.dart';
 
+/// Type definition for custom time-of-use strategy
+typedef CustomTimeOfUseStrategy = Map<String, bool> Function(int hour, double batteryStateOfCharge, double maxCapacity);
+
 /// Time-of-use electricity rate
 class TimeOfUseRate {
   final int startHour;
@@ -50,6 +53,7 @@ class HourlyBatteryResult {
   });
 }
 
+
 /// Daily simulation result for battery operation
 class DailyBatteryResult {
   final List<HourlyBatteryResult> hourlyResults;
@@ -87,6 +91,13 @@ class DailyBatteryResult {
   });
 }
 
+/// Battery control strategy enum
+enum BatteryControlStrategy {
+  selfConsumption,
+  timeOfUse,
+  peakShaving,
+}
+
 /// Battery model for simulating battery operation with different control strategies
 class BatterySimulator {
   final BatterySystem batterySystem;
@@ -108,7 +119,7 @@ class BatterySimulator {
     _degradationFactor = 1.0;
   }
   
-  /// Get state of charge (kWh)
+  // Get state of charge (kWh)
   double get stateOfCharge => _stateOfCharge;
   
   /// Get state of charge as percentage
@@ -134,6 +145,7 @@ class BatterySimulator {
     double gridExportRate = 0.05, // $/kWh
     double? gridImportLimit,
     double? gridExportLimit,
+    CustomTimeOfUseStrategy? customTimeOfUseStrategy,
   }) {
     if (hourlyLoad.length != 24 || hourlyPvProduction.length != 24) {
       throw ArgumentError('Hourly load and PV profiles must have 24 values');
@@ -146,16 +158,6 @@ class BatterySimulator {
     // Calculate effective capacity accounting for degradation
     final effectiveCapacity = batterySystem.capacity * _degradationFactor;
     final minSoc = effectiveCapacity * (1 - batterySystem.maxDepthOfDischarge);
-    
-    // Initialize totals
-    double totalPvProduction = 0;
-    double totalLoad = 0;
-    double totalGridImport = 0;
-    double totalGridExport = 0;
-    double totalSelfConsumed = 0;
-    double totalCost = 0;
-    double batteryChargeThroughput = 0;
-    double batteryDischargeThroughput = 0;
     
     // Process each hour
     for (int hour = 0; hour < 24; hour++) {
@@ -203,12 +205,16 @@ class BatterySimulator {
         bool shouldChargeBattery = true;
         
         if (controlStrategy == BatteryControlStrategy.timeOfUse) {
-          // For TOU, check if we're in a low-price period
-          // We might want to avoid charging if electricity is cheap now
-          // and we anticipate higher prices later
-          final currentHourPrice = currentImportRate;
-          final averagePrice = _calculateAverageTouRate(timeOfUseRates);
-          shouldChargeBattery = currentHourPrice <= averagePrice;
+          if (customTimeOfUseStrategy != null) {
+            // Use the custom strategy if provided
+            final decision = customTimeOfUseStrategy(hour, _stateOfCharge, effectiveCapacity);
+            shouldChargeBattery = decision['shouldCharge'] ?? false;
+          } else {
+            // For TOU, check if we're in a low-price period
+            final currentHourPrice = currentImportRate;
+            final averagePrice = _calculateAverageTouRate(timeOfUseRates);
+            shouldChargeBattery = currentHourPrice <= averagePrice;
+          }
         }
         
         if (shouldChargeBattery && _stateOfCharge < effectiveCapacity) {
@@ -262,10 +268,16 @@ class BatterySimulator {
         bool shouldDischargeBattery = true;
         
         if (controlStrategy == BatteryControlStrategy.timeOfUse) {
-          // For TOU, check if we're in a high-price period
-          final currentHourPrice = currentImportRate;
-          final averagePrice = _calculateAverageTouRate(timeOfUseRates);
-          shouldDischargeBattery = currentHourPrice > averagePrice;
+          if (customTimeOfUseStrategy != null) {
+            // Use the custom strategy if provided
+            final decision = customTimeOfUseStrategy(hour, _stateOfCharge, effectiveCapacity);
+            shouldDischargeBattery = decision['shouldDischarge'] ?? false;
+          } else {
+            // For TOU, check if we're in a high-price period
+            final currentHourPrice = currentImportRate;
+            final averagePrice = _calculateAverageTouRate(timeOfUseRates);
+            shouldDischargeBattery = currentHourPrice > averagePrice;
+          }
         } else if (controlStrategy == BatteryControlStrategy.peakShaving) {
           // For peak shaving, check if the current load would create a new peak
           if (gridImportLimit != null) {
@@ -428,6 +440,7 @@ class BatterySimulator {
     List<TimeOfUseRate>? timeOfUseRates,
     double gridImportRate = 0.15,
     double gridExportRate = 0.05,
+    CustomTimeOfUseStrategy? customTimeOfUseStrategy,
   }) {
     final results = <DailyBatteryResult>[];
     
@@ -439,6 +452,7 @@ class BatterySimulator {
         timeOfUseRates: timeOfUseRates,
         gridImportRate: gridImportRate,
         gridExportRate: gridExportRate,
+        customTimeOfUseStrategy: customTimeOfUseStrategy,
       );
       
       results.add(dailyResult);

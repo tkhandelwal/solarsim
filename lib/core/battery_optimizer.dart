@@ -3,6 +3,9 @@ import 'dart:math' as math;
 import '../models/battery_system.dart';
 import 'battery_simulator.dart';
 
+/// Type definition for custom battery control strategy
+typedef CustomTimeOfUseStrategy = Map<String, bool> Function(int hour, double batteryStateOfCharge, double maxCapacity);
+
 /// Advanced optimizer for battery operation strategies
 class BatteryOptimizer {
   final BatterySystem batterySystem;
@@ -267,12 +270,13 @@ class BatteryOptimizer {
     // Reset simulator to standard state
     simulator.reset(initialSocPercent: 50.0);
     
-    // Simulate a day with these thresholds
+    // Simulate a day with these thresholds using the custom strategy
     final result = simulator.simulateDay(
       hourlyLoad: typicalLoad,
       hourlyPvProduction: typicalProduction,
       controlStrategy: BatteryControlStrategy.timeOfUse,
       timeOfUseRates: timeOfUseRates,
+      customTimeOfUseStrategy: customStrategy, // Pass the custom strategy here
     );
     
     // Calculate savings compared to no battery
