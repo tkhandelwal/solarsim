@@ -19,6 +19,8 @@ dependencies:
   flutter_map: ^6.0.0  # Add this
   latlong2: ^0.9.0     # Add this
   http: ^1.3.0
+  gauge_indicator: ^0.3.3
+  flutter_svg: ^2.0.17
 
 dev_dependencies:
   flutter_test:

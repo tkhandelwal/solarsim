@@ -1,5 +1,5 @@
 // lib/widgets/financial_chart.dart
-import 'dart:math' as math;
+import 'dart:math' as Math;
 
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';

@@ -1,5 +1,4 @@
 // lib/models/battery_system.dart
-import 'package:flutter/foundation.dart';
 
 /// Battery chemistry types
 enum BatteryChemistry {

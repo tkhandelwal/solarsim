@@ -7,7 +7,6 @@ import 'package:solarsim/models/inverter.dart';
 import 'package:solarsim/core/pv_system_simulator.dart';
 import 'package:solarsim/core/weather_data.dart';
 import 'package:solarsim/services/weather_service.dart';
-import 'package:intl/intl.dart';
 import 'dart:math' as math;
 
 class AdvancedPVForecast extends StatefulWidget {

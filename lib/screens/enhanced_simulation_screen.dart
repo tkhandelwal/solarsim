@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:solarsim/models/project.dart';
 import 'package:solarsim/models/solar_module.dart';
 import 'package:solarsim/models/inverter.dart';
-import 'package:solarsim/core/pv_system_simulator.dart';
 import 'package:solarsim/providers/projects_provider.dart';
 import 'package:solarsim/widgets/system_design_wizard.dart';
 import 'package:solarsim/widgets/advanced_pv_forecast.dart';

@@ -10,8 +10,6 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:solarsim/widgets/module_selection_dialog.dart';
 import 'package:solarsim/widgets/inverter_selection_dialog.dart';
-import 'package:solarsim/models/solar_module.dart';
-import 'package:solarsim/models/inverter.dart';
 
 class ProjectScreen extends ConsumerWidget {
   final String projectId;

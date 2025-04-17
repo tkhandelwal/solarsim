@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import 'dart:math' as math;
-import 'package:syncfusion_flutter_gauges/gauges.dart';
 import 'package:solarsim/models/project.dart';
 import 'package:solarsim/models/solar_module.dart';
 import 'package:solarsim/models/inverter.dart';
 import 'package:solarsim/core/pv_system_simulator.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+
+// Import our custom gauge widgets
+import 'gauge_indicator.dart';
+import 'svg_loader.dart';
 
 class AdvancedPVDashboard extends StatefulWidget {
   final Project project;
@@ -454,67 +456,34 @@ class _AdvancedPVDashboardState extends State<AdvancedPVDashboard> with SingleTi
                   ),
                   const SizedBox(height: 16),
                   
-                  // Performance ratio gauge
+                  // Performance ratio gauge - Using our custom gauge
                   SizedBox(
                     height: 200,
-                    child: SfRadialGauge(
-                      axes: <RadialAxis>[
-                        RadialAxis(
-                          minimum: 0,
-                          maximum: 100,
-                          ranges: <GaugeRange>[
-                            GaugeRange(
-                              startValue: 0,
-                              endValue: 70,
-                              color: Colors.red,
-                            ),
-                            GaugeRange(
-                              startValue: 70,
-                              endValue: 80,
-                              color: Colors.orange,
-                            ),
-                            GaugeRange(
-                              startValue: 80,
-                              endValue: 100,
-                              color: Colors.green,
-                            ),
-                          ],
-                          pointers: <GaugePointer>[
-                            NeedlePointer(
-                              value: (_simulationResults['performanceRatio'] as double? ?? 0.0) * 100,
-                              needleColor: Colors.black,
-                              knobStyle: const KnobStyle(
-                                knobRadius: 0.1,
-                                sizeUnit: GaugeSizeUnit.factor,
-                              ),
-                            ),
-                          ],
-                          annotations: <GaugeAnnotation>[
-                            GaugeAnnotation(
-                              widget: Text(
-                                '${((_simulationResults['performanceRatio'] as double? ?? 0.0) * 100).toStringAsFixed(1)}%',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: _getPerformanceColor(
-                                    (_simulationResults['performanceRatio'] as double? ?? 0.0) * 100
-                                  ),
-                                ),
-                              ),
-                              angle: 90,
-                              positionFactor: 0.5,
-                            ),
-                            const GaugeAnnotation(
-                              widget: Text(
-                                'Performance Ratio',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                ),
-                              ),
-                              angle: 90,
-                              positionFactor: 0.8,
-                            ),
-                          ],
+                    child: GaugeIndicator(
+                      value: (_simulationResults['performanceRatio'] as double? ?? 0.0) * 100,
+                      minValue: 0,
+                      maxValue: 100,
+                      valueColor: _getPerformanceColor(
+                        (_simulationResults['performanceRatio'] as double? ?? 0.0) * 100
+                      ),
+                      backgroundColor: Colors.grey.shade300,
+                      title: 'Performance Ratio',
+                      subtitle: '${((_simulationResults['performanceRatio'] as double? ?? 0.0) * 100).toStringAsFixed(1)}%',
+                      ranges: const [
+                        GaugeRange(
+                          startValue: 0,
+                          endValue: 70,
+                          color: Colors.red,
+                        ),
+                        GaugeRange(
+                          startValue: 70,
+                          endValue: 80,
+                          color: Colors.orange,
+                        ),
+                        GaugeRange(
+                          startValue: 80,
+                          endValue: 100,
+                          color: Colors.green,
                         ),
                       ],
                     ),
@@ -685,6 +654,8 @@ class _AdvancedPVDashboardState extends State<AdvancedPVDashboard> with SingleTi
   }
   
   Widget _buildCurrentStatusCard() {
+    final maxPower = (_simulationResults['systemSizeKw'] as double? ?? 10.0) * 1.1;
+    
     return Card(
       elevation: 4,
       child: Padding(
@@ -718,77 +689,34 @@ class _AdvancedPVDashboardState extends State<AdvancedPVDashboard> with SingleTi
             ),
             const SizedBox(height: 16),
             
-            // Current power gauge
+            // Current power gauge with our custom gauge
             SizedBox(
               height: 160,
-              child: SfRadialGauge(
-                axes: <RadialAxis>[
-                  RadialAxis(
-                    minimum: 0,
-                    maximum: (_simulationResults['systemSizeKw'] as double? ?? 10.0) * 1.1,
-                    radiusFactor: 0.8,
-                    showLabels: true,
-                    showTicks: true,
-                    axisLabelStyle: const GaugeTextStyle(
-                      fontSize: 10,
-                    ),
-                    ranges: <GaugeRange>[
-                      GaugeRange(
-                        startValue: 0,
-                        endValue: (_simulationResults['systemSizeKw'] as double? ?? 10.0) * 0.2,
-                        color: Colors.red[200],
-                        startWidth: 20,
-                        endWidth: 20,
-                      ),
-                      GaugeRange(
-                        startValue: (_simulationResults['systemSizeKw'] as double? ?? 10.0) * 0.2,
-                        endValue: (_simulationResults['systemSizeKw'] as double? ?? 10.0) * 0.7,
-                        color: Colors.orange[300],
-                        startWidth: 20,
-                        endWidth: 20,
-                      ),
-                      GaugeRange(
-                        startValue: (_simulationResults['systemSizeKw'] as double? ?? 10.0) * 0.7,
-                        endValue: (_simulationResults['systemSizeKw'] as double? ?? 10.0) * 1.1,
-                        color: Colors.green[400],
-                        startWidth: 20,
-                        endWidth: 20,
-                      ),
-                    ],
-                    pointers: <GaugePointer>[
-                      NeedlePointer(
-                        value: _currentPower,
-                        needleLength: 0.7,
-                        needleColor: Colors.black,
-                        knobStyle: const KnobStyle(
-                          knobRadius: 0.1,
-                          sizeUnit: GaugeSizeUnit.factor,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ],
-                    annotations: <GaugeAnnotation>[
-                      GaugeAnnotation(
-                        widget: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              '${_currentPower.toStringAsFixed(1)} kW',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const Text(
-                              'Current Power',
-                              style: TextStyle(fontSize: 12),
-                            ),
-                          ],
-                        ),
-                        angle: 90,
-                        positionFactor: 0.5,
-                      ),
-                    ],
+              child: GaugeIndicator(
+                value: _currentPower,
+                minValue: 0,
+                maxValue: maxPower,
+                valueColor: _getPowerGaugeColor(_currentPower, maxPower),
+                backgroundColor: Colors.grey.shade200,
+                thickness: 15,
+                showValue: true,
+                title: 'Current Power',
+                subtitle: '${_currentPower.toStringAsFixed(1)} kW',
+                ranges: [
+                  GaugeRange(
+                    startValue: 0,
+                    endValue: maxPower * 0.2,
+                    color: Colors.red.shade200,
+                  ),
+                  GaugeRange(
+                    startValue: maxPower * 0.2,
+                    endValue: maxPower * 0.7,
+                    color: Colors.orange.shade300,
+                  ),
+                  GaugeRange(
+                    startValue: maxPower * 0.7,
+                    endValue: maxPower,
+                    color: Colors.green.shade400,
                   ),
                 ],
               ),
@@ -911,7 +839,13 @@ class _AdvancedPVDashboardState extends State<AdvancedPVDashboard> with SingleTi
                         children: [
                           Column(
                             children: [
-                              const Icon(Icons.park, color: Colors.green, size: 40),
+                              // Use SVG for tree icon
+                              SvgBuilder(
+                                svgContent: SvgIcons.generateSvg('tree'),
+                                width: 40,
+                                height: 40,
+                                color: Colors.green,
+                              ),
                               Text(
                                 '= ${treeEquivalent.toStringAsFixed(1)} trees',
                                 style: const TextStyle(fontSize: 12),
@@ -920,6 +854,7 @@ class _AdvancedPVDashboardState extends State<AdvancedPVDashboard> with SingleTi
                           ),
                           Column(
                             children: [
+                              // Use icon for car
                               const Icon(Icons.directions_car, color: Colors.blue, size: 40),
                               Text(
                                 '= ${carEquivalent.toStringAsFixed(2)} cars',
@@ -997,8 +932,13 @@ class _AdvancedPVDashboardState extends State<AdvancedPVDashboard> with SingleTi
                       ),
                     ],
                   ),
-                  child: const Center(
-                    child: Icon(Icons.wb_sunny, size: 40, color: Colors.orange),
+                  child: Center(
+                    child: SvgBuilder(
+                      svgContent: SvgIcons.generateSvg('sun'),
+                      width: 40,
+                      height: 40,
+                      color: Colors.orange,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -1013,23 +953,10 @@ class _AdvancedPVDashboardState extends State<AdvancedPVDashboard> with SingleTi
             left: 120,
             child: Column(
               children: [
-                Container(
+                SvgBuilder(
+                  svgContent: SvgIcons.generateSvg('solar_panel'),
                   width: 120,
                   height: 80,
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade800,
-                    border: Border.all(color: Colors.grey.shade600),
-                  ),
-                  child: GridView.count(
-                    crossAxisCount: 3,
-                    physics: const NeverScrollableScrollPhysics(),
-                    children: List.generate(6, (index) {
-                      return Container(
-                        margin: const EdgeInsets.all(2),
-                        color: Colors.blue.shade900,
-                      );
-                    }),
-                  ),
                 ),
                 const SizedBox(height: 8),
                 const Text('PV Array'),
@@ -1086,40 +1013,19 @@ class _AdvancedPVDashboardState extends State<AdvancedPVDashboard> with SingleTi
                   Stack(
                     alignment: Alignment.bottomCenter,
                     children: [
-                      Container(
+                      SvgBuilder(
+                        svgContent: SvgIcons.generateSvg('battery'),
                         width: 60,
                         height: 80,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade200,
-                          border: Border.all(color: Colors.grey.shade500),
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(4),
-                            topRight: Radius.circular(4),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        width: 60,
-                        height: 80 * _batteryStateOfCharge / 100,
-                        decoration: BoxDecoration(
-                          color: _getBatteryColor(_batteryStateOfCharge),
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(4),
-                            topRight: Radius.circular(4),
-                          ),
-                        ),
                       ),
                       Positioned(
-                        top: -5,
+                        bottom: 5,
                         child: Container(
-                          width: 20,
-                          height: 10,
+                          width: 40,
+                          height: 60 * _batteryStateOfCharge / 100,
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade500,
-                            borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(2),
-                              topRight: Radius.circular(2),
-                            ),
+                            color: _getBatteryColor(_batteryStateOfCharge),
+                            borderRadius: BorderRadius.circular(2),
                           ),
                         ),
                       ),
@@ -1138,12 +1044,10 @@ class _AdvancedPVDashboardState extends State<AdvancedPVDashboard> with SingleTi
             right: 60,
             child: Column(
               children: [
-                SizedBox(
+                SvgBuilder(
+                  svgContent: SvgIcons.generateSvg('house'),
                   width: 80,
                   height: 80,
-                  child: CustomPaint(
-                    painter: HousePainter(),
-                  ),
                 ),
                 const SizedBox(height: 8),
                 const Text('Home'),
@@ -2285,6 +2189,16 @@ class _AdvancedPVDashboardState extends State<AdvancedPVDashboard> with SingleTi
     }
   }
   
+  Color _getPowerGaugeColor(double power, double maxPower) {
+    if (power >= maxPower * 0.7) {
+      return Colors.green;
+    } else if (power >= maxPower * 0.3) {
+      return Colors.orange;
+    } else {
+      return Colors.red;
+    }
+  }
+  
   Color _getBatteryColor(double stateOfCharge) {
     if (stateOfCharge >= 80) {
       return Colors.green;
@@ -2386,66 +2300,6 @@ class _AdvancedPVDashboardState extends State<AdvancedPVDashboard> with SingleTi
         return 30;
     }
   }
-}
-
-// Helper class for painting a house icon
-class HousePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.grey.shade700
-      ..style = PaintingStyle.fill;
-    
-    // Roof
-    final roofPath = Path()
-      ..moveTo(size.width / 2, 0)
-      ..lineTo(0, size.height * 0.4)
-      ..lineTo(size.width, size.height * 0.4)
-      ..close();
-    
-    canvas.drawPath(roofPath, paint);
-    
-    // House body
-    final bodyRect = Rect.fromLTRB(
-      size.width * 0.15,
-      size.height * 0.4,
-      size.width * 0.85,
-      size.height,
-    );
-    
-    canvas.drawRect(bodyRect, paint);
-    
-    // Door
-    final doorPaint = Paint()
-      ..color = Colors.brown
-      ..style = PaintingStyle.fill;
-    
-    final doorRect = Rect.fromLTRB(
-      size.width * 0.4,
-      size.height * 0.65,
-      size.width * 0.6,
-      size.height,
-    );
-    
-    canvas.drawRect(doorRect, doorPaint);
-    
-    // Window
-    final windowPaint = Paint()
-      ..color = Colors.lightBlueAccent
-      ..style = PaintingStyle.fill;
-    
-    final windowRect = Rect.fromLTRB(
-      size.width * 0.25,
-      size.height * 0.5,
-      size.width * 0.45,
-      size.height * 0.6,
-    );
-    
-    canvas.drawRect(windowRect, windowPaint);
-  }
-  
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 // Helper class for painting arrows
@@ -2616,17 +2470,3 @@ class MonthlyProductionBarChart extends StatelessWidget {
     return months[index % 12];
   }
 }
-          fontWeight: FontWeight.bold,
-        ),
-      ));
-    }
-    
-    if (widget.losses.containsKey('shading')) {
-      losses.add(PieChartSectionData(
-        title: 'Shading',
-        value: widget.losses['shading']! * 100,
-        color: Colors.grey,
-        radius: 100,
-        titleStyle: const TextStyle(
-          color: Colors.white,
-          fontSize: 12,
