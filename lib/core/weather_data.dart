@@ -78,7 +78,6 @@ class WeatherData {
     // Generate hourly values
     return List.generate(24, (hour) {
       // Determine if it's daylight
-      final hourNormalized = (hour - 12) / 12; // -1 to 1
       final dayWindow = dayLengthFactor * 12; // hours of daylight
       
       if (hour >= 12 - dayWindow / 2 && hour <= 12 + dayWindow / 2) {
