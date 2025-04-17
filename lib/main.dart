@@ -2,12 +2,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:solar_sim/screens/home_screen.dart';
-import 'package:solar_sim/screens/project_screen.dart';
-import 'package:solar_sim/screens/simulation_screen.dart';
-import 'package:solar_sim/screens/report_screen.dart';
-import 'package:solar_sim/screens/settings_screen.dart';
-import 'package:solar_sim/themes/app_theme.dart';
+import 'package:solarsim/screens/home_screen.dart';
+import 'package:solarsim/screens/project_screen.dart';
+import 'package:solarsim/screens/simulation_screen.dart';
+import 'package:solarsim/screens/report_screen.dart';
+import 'package:solarsim/screens/settings_screen.dart';
+import 'package:solarsim/themes/app_theme.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();

@@ -1,6 +1,6 @@
 // lib/widgets/project_card.dart
 import 'package:flutter/material.dart';
-import 'package:solar_sim/models/project.dart';
+import 'package:solarsim/models/project.dart';
 import 'package:intl/intl.dart';
 
 class ProjectCard extends StatelessWidget {
