@@ -1,5 +1,6 @@
 // lib/widgets/layout_optimizer.dart
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
 
 class LayoutOptimizer extends StatefulWidget {
   final double availableArea;
@@ -162,6 +163,7 @@ class _LayoutOptimizerState extends State<LayoutOptimizer> {
                         (value) {
                           setState(() {
                             _rowsPerTable = int.tryParse(value) ?? _rowsPerTable;
+                            if (_rowsPerTable < 1) _rowsPerTable = 1;
                           });
                         },
                       ),
@@ -213,9 +215,106 @@ class _LayoutOptimizerState extends State<LayoutOptimizer> {
                     rowsPerTable: _rowsPerTable,
                     tableSpacing: _tableSpacing,
                     modulesPerRow: layout['modulesPerRow'],
-                    tables: layout
-
-
+                    tables: layout['tables'],
+                  ),
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // Layout metrics
+                Column(
+                  children: [
+                    _buildMetricRow('Number of modules', '${layout['totalModules']}'),
+                    _buildMetricRow('Modules per row', '${layout['modulesPerRow']}'),
+                    _buildMetricRow('Number of tables', '${layout['tables']}'),
+                    _buildMetricRow('Total PV capacity', '${layout['capacity'].toStringAsFixed(2)} kWp'),
+                    _buildMetricRow('Coverage ratio', '${(layout['coverageRatio'] * 100).toStringAsFixed(1)}%'),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+  
+  Map<String, dynamic> _calculateOptimizedLayout() {
+    // Calculate effective module dimensions based on orientation
+    final effectiveModuleWidth = _orientation == 0 ? _moduleWidth : _moduleLength;
+    final effectiveModuleLength = _orientation == 0 ? _moduleLength : _moduleWidth;
+    
+    // Calculate how many modules fit in a row
+    final modulesPerRow = ((widget.areaWidth + _moduleSpacingHorizontal) / 
+                        (effectiveModuleWidth + _moduleSpacingHorizontal)).floor();
+    
+    // Calculate total height of one table
+    final tableHeight = _rowsPerTable * effectiveModuleLength + 
+                      (_rowsPerTable - 1) * _moduleSpacingVertical;
+    
+    // Calculate how many tables fit
+    final tables = ((widget.areaLength + _tableSpacing) / 
+                  (tableHeight + _tableSpacing)).floor();
+    
+    // Calculate total modules
+    final totalModules = modulesPerRow * _rowsPerTable * tables;
+    
+    // Calculate capacity (assuming 400W modules)
+    final capacity = totalModules * 0.4; // kWp
+    
+    // Calculate coverage ratio
+    final moduleArea = effectiveModuleWidth * effectiveModuleLength;
+    final totalModuleArea = totalModules * moduleArea;
+    final coverageRatio = totalModuleArea / widget.availableArea;
+    
+    return {
+      'modulesPerRow': modulesPerRow,
+      'tables': tables,
+      'totalModules': totalModules,
+      'capacity': capacity,
+      'coverageRatio': coverageRatio,
+    };
+  }
+  
+  Widget _buildMetricRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label),
+          Text(
+            value,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildNumberField(
+    String label,
+    String value,
+    Function(String) onChanged,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label),
+        const SizedBox(height: 4),
+        TextField(
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          ),
+          keyboardType: TextInputType.number,
+          controller: TextEditingController(text: value),
+          onChanged: onChanged,
+        ),
+      ],
+    );
+  }
+}
 
 class LayoutVisualization extends StatelessWidget {
   final double areaWidth;
@@ -347,64 +446,4 @@ class LayoutPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return true;
   }
-}                    
-
-Map<String, dynamic> _calculateOptimizedLayout() {
-  // Calculate effective module dimensions based on orientation
-  final effectiveModuleWidth = _orientation == 0 ? _moduleWidth : _moduleLength;
-  final effectiveModuleLength = _orientation == 0 ? _moduleLength : _moduleWidth;
-  
-  // Calculate how many modules fit in a row
-  final modulesPerRow = ((widget.areaWidth + _moduleSpacingHorizontal) / 
-                        (effectiveModuleWidth + _moduleSpacingHorizontal)).floor();
-  
-  // Calculate total height of one table
-  final tableHeight = _rowsPerTable * effectiveModuleLength + 
-                      (_rowsPerTable - 1) * _moduleSpacingVertical;
-  
-  // Calculate how many tables fit
-  final tables = ((widget.areaLength + _tableSpacing) / 
-                  (tableHeight + _tableSpacing)).floor();
-  
-  // Calculate total modules
-  final totalModules = modulesPerRow * _rowsPerTable * tables;
-  
-  // Calculate capacity (assuming 400W modules)
-  final capacity = totalModules * 0.4; // kWp
-  
-  // Calculate coverage ratio
-  final moduleArea = effectiveModuleWidth * effectiveModuleLength;
-  final totalModuleArea = totalModules * moduleArea;
-  final coverageRatio = totalModuleArea / widget.availableArea;
-  
-  return {
-    'modulesPerRow': modulesPerRow,
-    'tables': tables,
-    'totalModules': totalModules,
-    'capacity': capacity,
-    'coverageRatio': coverageRatio,
-  };
-}
-
-Widget _buildNumberField(
-  String label,
-  String value,
-  Function(String) onChanged,
-) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(label),
-      const SizedBox(height: 4),
-      TextField(
-        decoration: const InputDecoration(
-          border: OutlineInputBorder(),
-          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        ),
-        keyboardType: TextInputType.number,
-        controller: TextEditingController(text: value),
-        onChanged: onChanged,
-      ),
-    ],
-  );
 }

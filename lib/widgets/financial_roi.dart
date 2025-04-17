@@ -1,6 +1,7 @@
 // lib/widgets/financial_roi.dart
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'dart:math' as math;
 
 class FinancialROIAnalysis extends StatefulWidget {
   final double systemCost;
@@ -185,6 +186,22 @@ class _FinancialROIAnalysisState extends State<FinancialROIAnalysis> {
     );
   }
   
+  Widget _buildMetricRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label),
+          Text(
+            value,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
+  }
+  
   double _calculatePaybackPeriod() {
     return widget.systemCost / widget.annualSavings;
   }
@@ -277,7 +294,7 @@ class CashFlowChart extends StatelessWidget {
   Widget build(BuildContext context) {
     return LineChart(
       LineChartData(
-        gridData: FlGridData(
+        gridData: const FlGridData(
           show: true,
           horizontalInterval: 10000,
         ),
@@ -320,10 +337,10 @@ class CashFlowChart extends StatelessWidget {
               },
             ),
           ),
-          topTitles: AxisTitles(
+          topTitles: const AxisTitles(
             sideTitles: SideTitles(showTitles: false),
           ),
-          rightTitles: AxisTitles(
+          rightTitles: const AxisTitles(
             sideTitles: SideTitles(showTitles: false),
           ),
         ),
@@ -359,7 +376,7 @@ class CashFlowChart extends StatelessWidget {
       color: Colors.blue,
       barWidth: 3,
       isStrokeCapRound: true,
-      dotData: FlDotData(show: true),
+      dotData: const FlDotData(show: true),
       belowBarData: BarAreaData(
         show: true,
         color: Colors.blue.withOpacity(0.2),
@@ -385,7 +402,7 @@ class CashFlowChart extends StatelessWidget {
       color: Colors.green,
       barWidth: 3,
       isStrokeCapRound: true,
-      dotData: FlDotData(show: true),
+      dotData: const FlDotData(show: true),
       belowBarData: BarAreaData(
         show: true,
         color: Colors.green.withOpacity(0.1),

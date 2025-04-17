@@ -8,9 +8,15 @@ import 'package:solarsim/screens/simulation_screen.dart';
 import 'package:solarsim/screens/report_screen.dart';
 import 'package:solarsim/screens/settings_screen.dart';
 import 'package:solarsim/themes/app_theme.dart';
+import 'package:solarsim/services/project_service.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize sample projects
+  final projectService = ProjectService();
+  projectService.initializeSampleProjects();
+  
   runApp(
     const ProviderScope(
       child: SolarSimApp(),
@@ -63,19 +69,3 @@ class SolarSimApp extends StatelessWidget {
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

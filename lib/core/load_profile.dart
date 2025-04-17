@@ -1,4 +1,6 @@
 // lib/core/load_profile.dart
+import 'dart:math' as math;
+
 /// Models electricity load profiles for energy consumption
 class LoadProfile {
   final List<double> hourlyLoad; // kW for each hour of the day

@@ -2,8 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:solar_sim/models/project.dart';
-import 'package:solar_sim/providers/projects_provider.dart';
+import 'package:solarsim/models/project.dart';
+import 'package:solarsim/providers/projects_provider.dart';
 import 'package:intl/intl.dart';
 // Import other necessary providers and models
 

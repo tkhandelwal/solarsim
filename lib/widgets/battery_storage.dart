@@ -1,6 +1,7 @@
 // lib/widgets/battery_storage.dart
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'dart:math' as math;
 
 class BatteryStorageSimulation extends StatefulWidget {
   final double dailyEnergyProduction;
@@ -215,10 +216,15 @@ class _BatteryStorageSimulationState extends State<BatteryStorageSimulation> {
           Text(label),
           Text(
             value,
-            style: const TextStyle(fontWeight: FontWeight.bol
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
-
-            class BatterySimulationChart extends StatelessWidget {
+class BatterySimulationChart extends StatelessWidget {
   final double batteryCapacity;
   final double maxChargePower;
   final double maxDischargePower;
@@ -295,10 +301,10 @@ class _BatteryStorageSimulationState extends State<BatteryStorageSimulation> {
               reservedSize: 40,
             ),
           ),
-          topTitles: AxisTitles(
+          topTitles: const AxisTitles(
             sideTitles: SideTitles(showTitles: false),
           ),
-          rightTitles: AxisTitles(
+          rightTitles: const AxisTitles(
             sideTitles: SideTitles(showTitles: false),
           ),
         ),
@@ -315,6 +321,34 @@ class _BatteryStorageSimulationState extends State<BatteryStorageSimulation> {
           _getSolarProductionData(),
           _getConsumptionData(),
         ],
+        lineTouchTooltipData: LineTouchTooltipData(
+          tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
+          getTooltipItems: (List<LineBarSpot> touchedSpots) {
+            return touchedSpots.map((LineBarSpot touchedSpot) {
+              final lineData = touchedSpot.bar;
+              String unit = '';
+              String title = '';
+              if (lineData == _getBatteryStateOfChargeData()) {
+                title = 'Battery';
+                unit = 'kWh';
+              } else if (lineData == _getSolarProductionData()) {
+                title = 'Solar';
+                unit = 'kW';
+              } else if (lineData == _getConsumptionData()) {
+                title = 'Consumption';
+                unit = 'kW';
+              }
+              
+              return LineTooltipItem(
+                '$title: ${touchedSpot.y.toStringAsFixed(1)} $unit',
+                TextStyle(
+                  color: touchedSpot.bar.color,
+                  fontWeight: FontWeight.bold,
+                ),
+              );
+            }).toList();
+          },
+        ),
       ),
     );
   }
@@ -354,7 +388,7 @@ class _BatteryStorageSimulationState extends State<BatteryStorageSimulation> {
       color: Colors.blue,
       barWidth: 3,
       isStrokeCapRound: true,
-      dotData: FlDotData(show: false),
+      dotData: const FlDotData(show: false),
       belowBarData: BarAreaData(
         show: true,
         color: Colors.blue.withOpacity(0.2),
@@ -376,7 +410,7 @@ class _BatteryStorageSimulationState extends State<BatteryStorageSimulation> {
       color: Colors.orange,
       barWidth: 2,
       isStrokeCapRound: true,
-      dotData: FlDotData(show: false),
+      dotData: const FlDotData(show: false),
     );
   }
   
@@ -394,7 +428,7 @@ class _BatteryStorageSimulationState extends State<BatteryStorageSimulation> {
       color: Colors.red,
       barWidth: 2,
       isStrokeCapRound: true,
-      dotData: FlDotData(show: false),
+      dotData: const FlDotData(show: false),
     );
   }
   
@@ -403,19 +437,19 @@ class _BatteryStorageSimulationState extends State<BatteryStorageSimulation> {
     switch (selectedDay) {
       case 0: // Sunny day
         if (hour < 6 || hour > 20) return 0;
-        final peakPower = 8.0;
+        const peakPower = 8.0;
         return peakPower * math.sin((hour - 6) / 14 * math.pi);
       case 1: // Cloudy day
         if (hour < 7 || hour > 19) return 0;
-        final peakPower = 3.0;
+        const peakPower = 3.0;
         return peakPower * math.sin((hour - 7) / 12 * math.pi) * (0.7 + 0.3 * math.sin(hour * 5));
       case 2: // Worst case day
         if (hour < 8 || hour > 17) return 0;
-        final peakPower = 1.5;
+        const peakPower = 1.5;
         return peakPower * math.sin((hour - 8) / 9 * math.pi) * (0.5 + 0.5 * math.sin(hour * 3));
       case 3: // Best case day
         if (hour < 5 || hour > 21) return 0;
-        final peakPower = 10.0;
+        const peakPower = 10.0;
         return peakPower * math.sin((hour - 5) / 16 * math.pi);
       default:
         return 0;
@@ -433,20 +467,4 @@ class _BatteryStorageSimulationState extends State<BatteryStorageSimulation> {
     
     return hourlyProfile[hour];
   }
-}
-
-Widget _buildMetricRow(String label, String value) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 4),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label),
-        Text(
-          value,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-      ],
-    ),
-  );
 }

@@ -63,14 +63,14 @@ class PVSystemSimulator {
     // Extract location data
     final latitude = project.location.latitude;
     final longitude = project.location.longitude;
-    final timeZoneOffset = 0; // Simplified - in real app get from timeZone string
+    const timeZoneOffset = 0; // Simplified - in real app get from timeZone string
     
     // Calculate solar position
     final solarPos = SolarPosition.calculate(
       dateTime: dateTime,
       latitude: latitude,
       longitude: longitude,
-      timeZoneOffset: timeZoneOffset,
+      timeZoneOffset: timeZoneOffset.toDouble(),
     );
     
     // Check if sun is up
@@ -147,8 +147,8 @@ class PVSystemSimulator {
       cellTemperature: cellTemp,
       dcPower: dcPower,
       acPower: acPower,
-      efficiency: efficiency,
-      performanceRatio: performanceRatio,
+      efficiency: efficiency.toDouble(),
+      performanceRatio: performanceRatio.toDouble(),
     );
   }
   

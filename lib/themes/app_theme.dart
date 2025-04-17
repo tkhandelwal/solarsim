@@ -5,7 +5,7 @@ class AppTheme {
   static final Color primaryColor = Colors.orange.shade700;
   static final Color secondaryColor = Colors.blue.shade800;
   
-  static final lightTheme = ThemeData(
+  static final ThemeData lightTheme = ThemeData(
     useMaterial3: true,
     colorScheme: ColorScheme.fromSeed(
       seedColor: primaryColor,
@@ -30,7 +30,7 @@ class AppTheme {
     ),
   );
 
-  static final darkTheme = ThemeData(
+  static final ThemeData darkTheme = ThemeData(
     useMaterial3: true,
     colorScheme: ColorScheme.fromSeed(
       seedColor: primaryColor,

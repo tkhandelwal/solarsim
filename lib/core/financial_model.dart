@@ -1,4 +1,6 @@
 // lib/core/financial_model.dart
+import 'dart:math' as math;
+
 /// Models the financial aspects of PV systems
 class FinancialModel {
   /// Calculate levelized cost of energy (LCOE)

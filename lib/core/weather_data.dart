@@ -1,4 +1,6 @@
 // lib/core/weather_data.dart
+import 'dart:math' as math;
+
 /// Models weather data for PV system simulations
 class WeatherData {
   final double latitude;
@@ -127,7 +129,7 @@ class WeatherData {
     }
     
     // Adjust based on latitude (cooler at higher latitudes)
-    baseTemp -= (math.min(math.abs(latitude), 60) / 60) * 10;
+    baseTemp -= (math.min(latitude.abs(), 60) / 60) * 10;
     
     // Generate hourly temperatures with diurnal variation
     return List.generate(24, (hour) {
@@ -135,7 +137,7 @@ class WeatherData {
       final hourFactor = math.sin((hour - 5) / 24 * 2 * math.pi);
       
       // Diurnal range depends on season and latitude
-      final diurnalRange = 5 + 5 * math.cos((math.abs(latitude) / 90) * math.pi/2);
+      final diurnalRange = 5 + 5 * math.cos((latitude.abs() / 90) * math.pi/2);
       
       return baseTemp + hourFactor * diurnalRange;
     });
